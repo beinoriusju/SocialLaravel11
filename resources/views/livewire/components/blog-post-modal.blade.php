@@ -62,7 +62,7 @@
                         {{ __('translations.Videos') }}
                     </a>
                 </div>
-                <input type="file" wire:model="video" accept="video/*" id="blogVideoInput" style="display: none;">
+                <input type="file" wire:model="video" accept="video/*" id="blogVideoInput" style="display: none;" multiple>
             </li>
         </ul>
 
@@ -76,6 +76,7 @@
 
     <!-- Preview Section -->
     <div class="mt-3">
+        <!-- Display Uploaded Images -->
         @if (!empty($images) && is_array($images))
             <div class="row">
                 @foreach ($images as $image)
@@ -88,10 +89,16 @@
             </div>
         @endif
 
-        @if (!empty($video))
-            <div class="mt-3">
-                <video src="{{ $video->temporaryUrl() }}" controls class="w-100" style="height: auto;"></video>
+        <!-- Display Uploaded Videos -->
+        @if (!empty($video) && is_array($video))
+            <div class="row mt-3">
+                @foreach ($video as $vid)
+                    @if ($vid)
+                        <div class="col-md-12 mb-3">
+                            <video src="{{ $vid->temporaryUrl() }}" controls class="w-100" style="height: auto;"></video>
+                        </div>
+                    @endif
+                @endforeach
             </div>
         @endif
     </div>
-</div>

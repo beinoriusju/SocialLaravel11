@@ -23,7 +23,7 @@
                                 $videos = [];
                                 $youtubeLinks = [];
 
-                                // Separate media by type (images, videos, youtube links)
+                                // Separate media by type (images, videos, YouTube links)
                                 foreach ($post->media as $media) {
                                     if ($media->file_type == 'image') {
                                         $images[] = $media->file;

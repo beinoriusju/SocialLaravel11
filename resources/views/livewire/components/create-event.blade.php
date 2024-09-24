@@ -4,10 +4,10 @@
         <!-- Event Category Selection -->
         <div class="form-group mb-3">
             <label for="eventCategory">{{ __('translations.Category') }}</label>
-            <select id="eventCategory" class="form-select" wire:model="eventCategory">
+            <select id="eventCategory" class="form-select" wire:model.lazy="eventCategory">
                 <option value="">{{ __('translations.Select Category') }}</option>
                 @foreach ($categories as $category)
-                    <option value="{{ $category->id }}">{{ __('translations.' . $category->name) }}</option> <!-- Translate category names -->
+                    <option value="{{ $category->id }}">{{ __('translations.' . $category->name) }}</option>
                 @endforeach
             </select>
         </div>
@@ -15,10 +15,10 @@
         <!-- Event Subcategory Selection -->
         <div class="form-group mb-3">
             <label for="eventSubCategory">{{ __('translations.Subcategory') }}</label>
-            <select id="eventSubCategory" class="form-select" wire:model="eventSubCategory" {{ $eventCategory && $subcategories->isEmpty() ? 'disabled' : '' }}>
+            <select id="eventSubCategory" class="form-select" wire:model.lazy="eventSubCategory" {{ $eventCategory && $subcategories->isEmpty() ? 'disabled' : '' }}>
                 <option value="">{{ __('translations.Select Subcategory') }}</option>
                 @foreach ($subcategories as $subcategory)
-                    <option value="{{ $subcategory->id }}">{{ __('translations.' . $subcategory->name) }}</option> <!-- Translate subcategory names -->
+                    <option value="{{ $subcategory->id }}">{{ __('translations.' . $subcategory->name) }}</option>
                 @endforeach
             </select>
         </div>
@@ -41,7 +41,6 @@
             <input type="date" id="eventDate" class="form-control" wire:model="event_date">
         </div>
 
-
         <!-- Image and Video Upload Options -->
         <ul class="d-flex flex-wrap align-items-center list-inline m-0 p-0">
             <!-- Image Upload -->
@@ -63,7 +62,7 @@
                         {{ __('translations.Videos') }}
                     </a>
                 </div>
-                <input type="file" wire:model="video" accept="video/*" id="eventVideoInput" style="display: none;">
+                <input type="file" wire:model="videos" accept="video/*" id="eventVideoInput" style="display: none;" multiple>
             </li>
         </ul>
 
@@ -73,7 +72,7 @@
 
     <!-- Loading Indicators -->
     <div wire:loading wire:target="images">{{ __('translations.Uploading images...') }}</div>
-    <div wire:loading wire:target="video">{{ __('translations.Uploading video...') }}</div>
+    <div wire:loading wire:target="videos">{{ __('translations.Uploading videos...') }}</div>
 
     <!-- Preview Section -->
     <div class="mt-3">
@@ -89,9 +88,11 @@
             </div>
         @endif
 
-        @if (!empty($video))
+        @if (!empty($videos))
             <div class="mt-3">
-                <video src="{{ $video->temporaryUrl() }}" controls class="w-100" style="height: auto;"></video>
+                @foreach ($videos as $video)
+                    <video src="{{ $video->temporaryUrl() }}" controls class="w-100" style="height: auto;"></video>
+                @endforeach
             </div>
         @endif
     </div>

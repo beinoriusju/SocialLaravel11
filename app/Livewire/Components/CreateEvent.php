@@ -19,7 +19,7 @@ class CreateEvent extends Component
     public $description;
     public $event_date;
     public $images = [];
-    public $video;
+    public $videos = []; // Multiple video support
     public $categories = [];
     public $subcategories = [];
     public $eventCategory;
@@ -27,23 +27,27 @@ class CreateEvent extends Component
 
     public function mount()
     {
-        // Fetch all event categories with their subcategories
-        $this->categories = EventCategory::with('eventSubCategories')->get();
+        // Check if the user is an admin
+        if (auth()->user()->role == 'admin') {
+            // Fetch all categories for admins (including both admin and non-admin categories)
+            $this->categories = EventCategory::where('status', 1)->get();
+        } else {
+            // Fetch only non-admin categories for regular users
+            $this->categories = EventCategory::where('admin', 0)->where('status', 1)->get();
+        }
     }
 
     // Update subcategories when a category is selected
     public function updatedEventCategory($categoryId)
     {
         if ($categoryId) {
-            // Fetch subcategories related to the selected event category
             $this->subcategories = EventSubCategory::where('category_id', $categoryId)->get();
 
-            // If no subcategories are found, reset the selected subcategory
+            // Reset subcategory if none found
             if ($this->subcategories->isEmpty()) {
                 $this->eventSubCategory = null;
             }
         } else {
-            // Clear subcategories and reset subcategory selection
             $this->subcategories = [];
             $this->eventSubCategory = null;
         }
@@ -58,11 +62,11 @@ class CreateEvent extends Component
             'event_date' => 'required|date',
             'eventCategory' => 'required|exists:event_categories,id',
             'eventSubCategory' => 'nullable|exists:event_subcategories,id',
-            'images.*' => 'nullable|image|max:51200', // 50 MB in kilobytes
-            'video' => 'nullable|mimes:mp4,avi,mkv|max:51200', // 50 MB in kilobytes
+            'images.*' => 'nullable|image|max:51200',
+            'videos.*' => 'nullable|mimes:mp4,avi,mkv|max:51200',
         ]);
 
-        // Extract YouTube links from the title, description, and event details
+        // Extract YouTube links from the title and description
         $youtubeLinks = $this->extractYouTubeLinks($this->title, $this->description);
 
         DB::beginTransaction();
@@ -78,48 +82,46 @@ class CreateEvent extends Component
                 'subcategory_id' => $this->eventSubCategory,
             ]);
 
-            // Save YouTube links (if any)
+            // Save YouTube links
             if (!empty($youtubeLinks)) {
                 foreach ($youtubeLinks as $link) {
                     EventMedia::create([
                         'event_id' => $event->id,
-                        'file_type' => 'youtube', // Store YouTube links as 'youtube'
+                        'file_type' => 'youtube',
                         'file' => $link,
                     ]);
                 }
             }
 
-            // Process images and save to user-specific folder
-            if ($this->images) {
-                foreach ($this->images as $image) {
-                    $imagePath = $image->store("events/{$event->user_id}/images", 'public');
-                    EventMedia::create([
-                        'event_id' => $event->id,
-                        'file_type' => 'image',
-                        'file' => $imagePath,
-                    ]);
-                }
+            // Save images
+            foreach ($this->images as $image) {
+                $imagePath = $image->store("events/{$event->user_id}/images", 'public');
+                EventMedia::create([
+                    'event_id' => $event->id,
+                    'file_type' => 'image',
+                    'file' => $imagePath,
+                ]);
             }
 
-            // Process video and save to user-specific folder
-            if ($this->video) {
-                $videoFilePath = $this->video->store("events/{$event->user_id}/videos", 'public');
+            // Save videos
+            foreach ($this->videos as $video) {
+                $videoPath = $video->store("events/{$event->user_id}/videos", 'public');
                 EventMedia::create([
                     'event_id' => $event->id,
                     'file_type' => 'video',
-                    'file' => $videoFilePath,
+                    'file' => $videoPath,
                 ]);
             }
 
             DB::commit();
 
-            // Emit an event to refresh the list of events
-            $this->emit('reload');
+            // Emit event to refresh the list of events
+            $this->dispatch('reload');
 
-            // Notify the user about the successful event creation
+            // Notify the user
             $this->dispatch('alert', [
                 'type' => 'success',
-                'message' => 'Event created successfully!'
+                'message' => 'Event created successfully!',
             ]);
 
         } catch (\Throwable $th) {
@@ -128,11 +130,11 @@ class CreateEvent extends Component
         }
 
         // Clear the form fields
-        $this->reset(['title', 'description', 'event_date', 'images', 'video', 'eventCategory', 'eventSubCategory']);
+        $this->resetForm();
     }
 
     /**
-     * Extract all YouTube video and playlist links from the title, description, and details.
+     * Extract YouTube links from the title and description.
      *
      * @param string|null $title
      * @param string|null $description
@@ -140,14 +142,9 @@ class CreateEvent extends Component
      */
     protected function extractYouTubeLinks($title, $description)
     {
-        // Combine all fields into one string
         $content = $title . ' ' . $description;
+        if (!$content) return [];
 
-        if (!$content) {
-            return [];
-        }
-
-        // Regular expressions to match YouTube video and playlist URLs
         $videoPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/i';
         $playlistPattern = '/(?:https?:\/\/)?(?:youtube\.com\/playlist\?list=)([\w\-]+)/i';
 
@@ -155,10 +152,15 @@ class CreateEvent extends Component
         preg_match_all($videoPattern, $content, $videoMatches);
         preg_match_all($playlistPattern, $content, $playlistMatches);
 
-        // Combine video and playlist matches
-        $matches = array_merge($videoMatches[0], $playlistMatches[0]);
+        return array_merge($videoMatches[0], $playlistMatches[0]);
+    }
 
-        return $matches;
+    public function resetForm()
+    {
+        $this->reset([
+            'title', 'description', 'event_date', 'images', 'videos',
+            'eventCategory', 'eventSubCategory',
+        ]);
     }
 
     public function render()

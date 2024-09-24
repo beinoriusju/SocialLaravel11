@@ -1,6 +1,6 @@
 <div class="iq-search-bar device-search position-relative">
     <form class="searchbox">
-        <input wire:model="query" type="text" class="form-control bg-light-subtle" placeholder="{{ __('translations.Search') }}...">
+        <input wire:model.live="query" type="text" class="form-control bg-light-subtle" placeholder="{{ __('translations.Search') }}...">
     </form>
 
     @if (strlen($query) >= 2)

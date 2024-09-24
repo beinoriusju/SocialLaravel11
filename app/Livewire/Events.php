@@ -2,12 +2,15 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use Livewire\WithFileUploads;
 use App\Models\EventCategory;
-use App\Models\EventSubCategory; 
+use App\Models\EventSubCategory;
+use App\Models\Event;
+use App\Models\EventMedia;
 use App\Models\EventAttendee;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
+use Illuminate\Support\Collection;
 
 class Events extends Component
 {
@@ -22,18 +25,27 @@ class Events extends Component
     public $details;
     public $event_date;
     public $images = [];
-    public $video;
+    public $videos = []; // Support for multiple videos
     public $editMode = false;
     public $eventIdBeingEdited = null;
+    public $attendees = [];
+    public $startDate;
+    public $endDate;
 
-    public $startDate; // Start date for filtering
-    public $endDate;   // End date for filtering
-    public $attendees = []; // Store attendees for modal
+    // Property to hold events as a collection
+    public $events;
+
+    // Infinite scroll variables
+    public $postsPerPage = 10;
+    public $page = 1;
+    public $hasMorePages = true;
 
     public function mount()
     {
-        // Fetch all categories with subcategories
+        // Fetch all event categories with their subcategories
         $this->categories = EventCategory::with('eventSubCategories')->get();
+        $this->events = collect(); // Initialize $events as a collection
+        $this->loadMoreEvents();  // Load initial events
     }
 
     public function updatedSelectedCategory($categoryId)
@@ -41,10 +53,32 @@ class Events extends Component
         if ($categoryId) {
             $this->subcategories = EventSubCategory::where('category_id', $categoryId)->get();
         } else {
-            $this->subcategories = [];
+            $this->subcategories = collect();
         }
-
         $this->selectedSubcategory = null;
+
+        // Reset pagination and reload events when category changes
+        $this->resetPagination();
+        $this->loadMoreEvents(true);
+    }
+
+    public function updatedSelectedSubcategory()
+    {
+        // Reset pagination and reload events when subcategory changes
+        $this->resetPagination();
+        $this->loadMoreEvents(true);
+    }
+
+    public function updatedStartDate()
+    {
+        $this->resetPagination();
+        $this->loadMoreEvents(true);
+    }
+
+    public function updatedEndDate()
+    {
+        $this->resetPagination();
+        $this->loadMoreEvents(true);
     }
 
     public function createEvent()
@@ -55,10 +89,10 @@ class Events extends Component
             'details' => 'nullable|string',
             'event_date' => 'required|date',
             'images.*' => 'nullable|image|max:51200',
-            'video' => 'nullable|mimes:mp4,mkv|max:51200',
+            'videos.*' => 'nullable|mimes:mp4,mkv|max:51200', // Support multiple videos
         ]);
 
-        Event::create([
+        $event = Event::create([
             'title' => $this->title,
             'description' => $this->description,
             'details' => $this->details,
@@ -68,7 +102,10 @@ class Events extends Component
             'user_id' => auth()->id(),
         ]);
 
-        // Reset form after submission
+        // Save media files
+        $this->saveMedia($event);
+
+        // Reset form after creating the event
         $this->resetForm();
     }
 
@@ -76,6 +113,7 @@ class Events extends Component
     {
         $this->editMode = true;
         $this->eventIdBeingEdited = $eventId;
+
         $event = Event::findOrFail($eventId);
 
         $this->title = $event->title;
@@ -94,10 +132,11 @@ class Events extends Component
             'details' => 'nullable|string',
             'event_date' => 'required|date',
             'images.*' => 'nullable|image|max:51200',
-            'video' => 'nullable|mimes:mp4,mkv|max:51200',
+            'videos.*' => 'nullable|mimes:mp4,mkv|max:51200', // Support multiple videos
         ]);
 
         $event = Event::findOrFail($this->eventIdBeingEdited);
+
         $event->update([
             'title' => $this->title,
             'description' => $this->description,
@@ -107,60 +146,85 @@ class Events extends Component
             'subcategory_id' => $this->selectedSubcategory,
         ]);
 
+        // Remove existing YouTube links and update new ones
+        EventMedia::where('event_id', $event->id)
+            ->where('file_type', 'youtube')
+            ->delete();
+
+        // Extract new YouTube links
+        $youtubeLinks = $this->extractYouTubeLinks($this->title, $this->description);
+        foreach ($youtubeLinks as $link) {
+            EventMedia::create([
+                'event_id' => $event->id,
+                'file_type' => 'youtube',
+                'file' => $link,
+            ]);
+        }
+
+        // Save new media
+        $this->saveMedia($event);
+
+        // Reset form after updating the event
         $this->resetForm();
     }
 
     public function deleteEvent($eventId)
     {
         $event = Event::findOrFail($eventId);
-
-        // Get associated media
-        $mediaItems = $event->media;
-
-        // Loop through each media item and delete it from storage
-        foreach ($mediaItems as $media) {
-            if ($media->file_type == 'image' || $media->file_type == 'video') {
-                \Storage::disk('public')->delete($media->file);
-            }
+        foreach ($event->media as $media) {
+            \Storage::disk('public')->delete($media->file);
             $media->delete();
         }
-
-        // Delete the event itself
         $event->delete();
+    }
+
+    private function saveMedia($event)
+    {
+        // Save images
+        foreach ($this->images as $image) {
+            $imagePath = $image->store("events/{$event->user_id}/images", 'public');
+            EventMedia::create([
+                'event_id' => $event->id,
+                'file_type' => 'image',
+                'file' => $imagePath,
+            ]);
+        }
+
+        // Save videos
+        foreach ($this->videos as $video) {
+            $videoPath = $video->store("events/{$event->user_id}/videos", 'public');
+            EventMedia::create([
+                'event_id' => $event->id,
+                'file_type' => 'video',
+                'file' => $videoPath,
+            ]);
+        }
     }
 
     public function resetForm()
     {
+        $this->reset(['title', 'description', 'details', 'event_date', 'images', 'videos', 'selectedCategory', 'selectedSubcategory']);
         $this->editMode = false;
-        $this->title = '';
-        $this->description = '';
-        $this->details = '';
-        $this->event_date = '';
-        $this->images = [];
-        $this->video = '';
-        $this->selectedCategory = null;
-        $this->selectedSubcategory = null;
         $this->eventIdBeingEdited = null;
     }
 
-    public function filterEvents()
+    public function extractYouTubeLinks($title, $description)
     {
-        $this->resetPage();
-    }
+        $content = $title . ' ' . $description;
+        if (!$content) return [];
 
-    /**
-     * Load attendees for a specific event and show them in a modal.
-     */
-    public function showAttendees($eventId)
-    {
-        $event = Event::with('attendees')->findOrFail($eventId);
-        $this->attendees = $event->attendees;
+        $videoPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/i';
+        preg_match_all($videoPattern, $content, $videoMatches);
+
+        return array_unique($videoMatches[0]);
     }
 
     public function toggleAttendance($eventId)
     {
         $userId = auth()->id();
-        $attendee = EventAttendee::where('event_id', $eventId)->where('user_id', $userId)->first();
+        $attendee = EventAttendee::where('event_id', $eventId)
+            ->where('user_id', $userId)
+            ->first();
 
         if ($attendee) {
             // User is already attending, so remove them
@@ -168,36 +232,76 @@ class Events extends Component
         } else {
             // User is not attending, so add them
             EventAttendee::create([
-                'event_id' => $eventId,
-                'user_id' => $userId,
-            ]);
-        }
-    }
+                            'event_id' => $eventId,
+                            'user_id' => $userId,
+                        ]);
+                    }
 
-    public function render()
-    {
-        $query = Event::with('media', 'attendees');
+                    // Reload events to reflect attendance change
+                    $this->resetPagination();
+                    $this->loadMoreEvents(true);
+                }
 
-        if ($this->selectedCategory) {
-            $query->where('category_id', $this->selectedCategory);
-        }
+                public function loadMoreEvents($reset = false)
+                {
+                    if ($reset) {
+                        $this->events = collect();  // Initialize $events as a collection
+                    }
 
-        if ($this->selectedSubcategory) {
-            $query->where('subcategory_id', $this->selectedSubcategory);
-        }
+                    $query = Event::with('media', 'attendees');
 
-        if ($this->startDate) {
-            $query->whereDate('event_date', '>=', $this->startDate);
-        }
+                    if ($this->selectedCategory) {
+                        $query->where('category_id', $this->selectedCategory);
+                    }
 
-        if ($this->endDate) {
-            $query->whereDate('event_date', '<=', $this->endDate);
-        }
+                    if ($this->selectedSubcategory) {
+                        $query->where('subcategory_id', $this->selectedSubcategory);
+                    }
 
-        $events = $query->latest()->paginate(10);
+                    if ($this->startDate) {
+                        $query->whereDate('event_date', '>=', $this->startDate);
+                    }
 
-        return view('livewire.event', [
-            'events' => $events,
-        ])->extends('layouts.app');
-    }
-}
+                    if ($this->endDate) {
+                        $query->whereDate('event_date', '<=', $this->endDate);
+                    }
+
+                    $newEvents = $query->latest()
+                        ->skip(($this->page - 1) * $this->postsPerPage)
+                        ->take($this->postsPerPage)
+                        ->get();
+
+                    if ($newEvents->count() < $this->postsPerPage) {
+                        $this->hasMorePages = false;
+                    }
+
+                    $this->events = $this->events->concat($newEvents); // Concatenate new events to the existing collection
+
+                    $this->page++;
+                }
+
+                public function showAttendees($eventId)
+                {
+                    // Fetch the attendees for the selected event as a collection
+                    $this->attendees = EventAttendee::where('event_id', $eventId)
+                        ->with('user')
+                        ->get();  // This will return a collection, not an array
+
+                    // Dispatch the event to open the modal
+                    $this->dispatch('show-attendees-modal');
+                }
+
+                public function resetPagination()
+                {
+                    $this->page = 1;
+                    $this->hasMorePages = true;
+                }
+
+                public function render()
+                {
+                    return view('livewire.events', [
+                        'events' => $this->events,
+                        'hasMorePages' => $this->hasMorePages,
+                    ])->extends('layouts.app');
+                }
+            }

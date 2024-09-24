@@ -126,7 +126,7 @@
 
                             <!-- Edit/Delete buttons -->
                             <div class="col-md-12 mt-3">
-                                @if(auth()->user()->role === 'admin')
+                              @if(auth()->check() && auth()->user()->role === 'admin')
                                     <button wire:click="editPost({{ $post['id'] }})" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
                                     <button wire:click="deletePost({{ $post['id'] }})" class="btn btn-danger btn-sm">Delete</button>
                                 @endif

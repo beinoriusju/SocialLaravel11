@@ -17,7 +17,7 @@ class UserSearch extends Component
     public function updatedQuery()
     {
         if (strlen($this->query) >= 2) {
-            $this->users = User::where('name', 'like', '%' . $this->query . '%')
+            $this->users = User::where('username', 'like', '%' . $this->query . '%')
                                ->orWhere('last_name', 'like', '%' . $this->query . '%')
                                ->get();
 
@@ -120,7 +120,7 @@ class UserSearch extends Component
 
                 $this->dispatch('alert', [
                     'type' => 'success',
-                    'message' => 'Friend request or friendship removed with ' . User::find($receiverId)->name,
+                    'message' => 'Friend request or friendship removed with ' . User::find($receiverId)->username,
                 ]);
 
                 $this->loadFriendRequests();

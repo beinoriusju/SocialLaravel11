@@ -34,7 +34,7 @@
                                               </div>
                                                 <div class="user-data-block mt-md-0 mt-2">
                                                     <h4>
-                                                      <a href="{{ route('userprofile', ['user' => $user->id]) }}">{{ $user->name }} {{ $user->last_name }}</a>
+                                                      <a href="{{ route('userprofile', ['user' => $user->id]) }}">{{ $user->username }}</a>
                                                     </h4>
                                                 </div>
                                             </div>

@@ -106,7 +106,7 @@ class UsersList extends Component
             Log::info('Friend request and notification created successfully'); // Log success
 
             $this->dispatch('alert', [
-                'type' => 'success', 'message' => 'Friend request sent to ' . $user->name
+                'type' => 'success', 'message' => 'Friend request sent to ' . $user->username
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -160,7 +160,7 @@ class UsersList extends Component
                 Log::info('Notification for friend request removal created successfully'); // Log success
 
                 $this->dispatch('alert', [
-                    'type' => 'success', 'message' => 'Friend request or friendship removed with ' . $user->name
+                    'type' => 'success', 'message' => 'Friend request or friendship removed with ' . $user->username
                 ]);
             } else {
                 Log::error('No existing friendship or request found'); // Log error if not found

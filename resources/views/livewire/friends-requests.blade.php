@@ -16,7 +16,7 @@
                                             </div>
                                             <div class="user-data-block mt-md-0 mt-2">
                                                 <h4>
-                                                    <a href="{{ route('userprofile', ['user' => $request->user_id]) }}">{{ $request->user->name }} {{ $request->user->last_name }}</a>
+                                                    <a href="{{ route('userprofile', ['user' => $request->user_id]) }}">{{ $request->user->username }}</a>
                                                 </h4>
                                                 <button wire:click="acceptFriend('{{ $request->user_id }}')" class="btn btn-primary mt-2">Accept</button>
                                                 <button wire:click="rejectFriend('{{ $request->user_id }}')" class="btn btn-danger mt-2">Reject</button>

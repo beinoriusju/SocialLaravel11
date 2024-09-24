@@ -36,7 +36,7 @@
                                             <div class="w-100">
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <div>
-                                                        <h6 class="mb-0 d-inline-block">{{ $post->user->username }} {{ $post->user->last_username }}</h6>
+                                                        <h6 class="mb-0 d-inline-block">{{ $post->user->username }}</h6>
                                                         <p class="mb-0">{{ $post->created_at->diffForHumans() }}</p>
                                                     </div>
                                                     <div class="card-post-toolbar">

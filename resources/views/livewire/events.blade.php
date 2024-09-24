@@ -210,7 +210,7 @@
                                          alt="user-img"
                                          class="img-fluid rounded-circle me-2"
                                          style="width: 40px; height: 40px;">
-                                    <span>{{ $attendee->name }}</span>
+                                    <span>{{ $attendee->username }}</span>
                                 </a>
                             </li>
                         @endforeach

@@ -25,7 +25,7 @@
                                 <div>
                                     <h6 class="font-size-14">
                                         @if ($notification->sender)
-                                            {{ $notification->sender->name }}
+                                            {{ $notification->sender->username }}
                                         @else
                                             {{ __('Unknown User') }}
                                         @endif

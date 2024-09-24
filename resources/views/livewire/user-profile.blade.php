@@ -30,7 +30,7 @@
                                 </div>
 
                                 <h5 class="d-flex align-items-center justify-content-center gap-1 mb-2">
-                                    {{ $user->name }}
+                                    {{ $user->username }}
                                 </h5>
                             </div>
 
@@ -110,7 +110,7 @@
                                                   <div class="w-100">
                                                       <div class="d-flex align-items-center justify-content-between">
                                                           <div>
-                                                              <h6 class="mb-0 d-inline-block">{{ $post->user->username }} {{ $post->user->last_username }}</h6>
+                                                              <h6 class="mb-0 d-inline-block">{{ $post->user->username }}</h6>
                                                               <p class="mb-0">{{ $post->created_at->diffForHumans() }}</p>
                                                           </div>
                                                           <div class="card-post-toolbar">
@@ -630,7 +630,7 @@
                                                                                 <img src="{{ $friendUser->image ? asset('storage/' . $friendUser->image) : asset('front/images/default.png') }}" alt="{{ __('translations.userimg') }}" class="avatar-60 rounded-circle img-fluid" loading="lazy">
                                                                             </a>
                                                                             <div class="friend-info ms-3">
-                                                                                <h5>{{ $friendUser->name }}</h5>
+                                                                                <h5>{{ $friendUser->username }}</h5>
                                                                             </div>
                                                                         </div>
                                                                     </div>

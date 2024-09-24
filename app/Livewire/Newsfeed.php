@@ -189,7 +189,7 @@ class Newsfeed extends Component
             return $group->map(function ($like) {
                 return [
                     'user_id' => $like->user->id ?? null,
-                    'user' => $like->user->name ?? 'Unknown User',
+                    'user' => $like->user->username ?? 'Unknown User',
                     'user_image' => $like->user->image ?? 'default.png',
                     'reaction_type' => $like->reaction_type,
                 ];

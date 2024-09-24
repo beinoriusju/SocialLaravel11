@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\BlogPostMedia;
 use App\Models\BlogPost;
 use App\Models\BlogCategory;
 use App\Models\BlogSubCategory;
@@ -117,11 +118,18 @@ class Blog extends Component
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'details' => 'nullable|string',
-            'images.*' => 'nullable|image|max:51200',
-            'video' => 'nullable|mimes:mp4,mkv|max:51200',
         ]);
 
-        $post = BlogPost::findOrFail($this->postIdBeingEdited);
+        $post = BlogPost::find($this->postIdBeingEdited);
+
+        if (!$post) {
+            return; // Handle this case where the post does not exist.
+        }
+
+        // Log the post ID for debugging
+        \Log::info('Updating post ID: ' . $post->id);
+
+        // Update the post's basic info
         $post->update([
             'title' => $this->title,
             'description' => $this->description,
@@ -130,6 +138,31 @@ class Blog extends Component
             'subcategory_id' => $this->selectedSubcategory,
         ]);
 
+        // Extract new YouTube links from all relevant fields
+        $newYouTubeLinks = $this->extractYouTubeLinks([
+            $this->title,
+            $this->description,
+            $this->details,
+        ]);
+
+        // Remove all existing YouTube links for the post
+        BlogPostMedia::where('blog_post_id', $post->id)
+            ->where('file_type', 'youtube')
+            ->delete();
+
+        // Check if there are new YouTube links to add
+        if (!empty($newYouTubeLinks)) {
+            foreach ($newYouTubeLinks as $link) {
+                BlogPostMedia::create([
+                    'blog_post_id' => $post->id, // Ensure this ID is valid
+                    'file_type' => 'youtube',
+                    'file' => $link,
+                    'position' => 'general',
+                ]);
+            }
+        }
+
+        // Reset form and refresh posts
         $this->resetForm();
         $this->resetPosts();
     }
@@ -204,6 +237,30 @@ class Blog extends Component
                 $this->page++;
             }
         }
+    }
+
+    private function extractYouTubeLinks(array $contents)
+    {
+        $matches = [];
+
+        // Regular expressions to match YouTube video and playlist URLs
+        $videoPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/i';
+        $playlistPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/playlist\?list=)([\w\-]+)/i';
+
+        foreach ($contents as $content) {
+            if (!$content) {
+                continue;
+            }
+
+            preg_match_all($videoPattern, $content, $videoMatches);
+            preg_match_all($playlistPattern, $content, $playlistMatches);
+
+            // Combine video and playlist matches
+            $matches = array_merge($matches, $videoMatches[0], $playlistMatches[0]);
+        }
+
+        // Remove duplicate links
+        return array_unique($matches);
     }
 
     public function render()

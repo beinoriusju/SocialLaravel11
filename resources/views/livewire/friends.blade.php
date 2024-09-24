@@ -24,7 +24,7 @@
                                                 </div>
                                                 <div class="user-data-block mt-md-0 mt-2">
                                                     <h4>
-                                                      <a href="{{ route('userprofile', ['user' => $friendUser->id]) }}">{{ $friendUser->name }} {{ $friendUser->last_name }}</a>
+                                                      <a href="{{ route('userprofile', ['user' => $friendUser->id]) }}">{{ $friendUser->username }}</a>
                                                     </h4>
                                                     <!-- Unfriend Button -->
                                                     <button wire:click="unfriend('{{ $friendUser->id }}')" class="btn btn-danger mt-2">Unfriend</button>

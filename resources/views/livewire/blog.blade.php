@@ -116,9 +116,16 @@
                                                 <video controls class="w-100">
                                                     <source src="{{ asset('storage/' . $media['file']) }}" type="video/mp4">
                                                 </video>
-                                            @elseif ($media['file_type'] == 'youtube')
-                                                <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen></iframe>
-                                            @endif
+                                                @elseif ($media['file_type'] == 'youtube')
+                                                    @php
+                                                        $youtubeUrl = $media['file'];
+                                                        $videoId = \Illuminate\Support\Str::after($youtubeUrl, 'v=');
+                                                        if (str_contains($videoId, '&')) {
+                                                            $videoId = strtok($videoId, '&');
+                                                        }
+                                                    @endphp
+                                                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen></iframe>
+                                                @endif
                                         </div>
                                     </div>
                                 @endif

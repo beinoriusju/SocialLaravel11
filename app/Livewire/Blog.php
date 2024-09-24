@@ -6,7 +6,6 @@ use App\Models\BlogPost;
 use App\Models\BlogCategory;
 use App\Models\BlogSubCategory;
 use Livewire\Component;
-use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 
 class Blog extends Component
@@ -25,15 +24,21 @@ class Blog extends Component
     public $editMode = false;
     public $postIdBeingEdited = null;
 
-    public $page = 1; // Current page for infinite scrolling
-    public $hasMorePosts = true; // To track if there are more posts to load
-    public $blogPosts = []; // To store loaded blog posts
+    // Infinite scroll variables
+    public $postsPerPage = 10;
+    public $page = 1;
+    public $hasMorePages = true;
+    public $loadedPosts = [];
+
+    protected $listeners = [
+        'refresh' => '$refresh',
+    ];
 
     public function mount()
     {
         // Fetch all categories with subcategories
         $this->categories = BlogCategory::with('blogSubCategories')->get();
-        $this->loadMorePosts(); // Load the initial posts
+        $this->loadMorePosts(); // Initial load of posts
     }
 
     public function updatedSelectedCategory($categoryId)
@@ -43,44 +48,23 @@ class Blog extends Component
         } else {
             $this->subcategories = [];
         }
+
         $this->selectedSubcategory = null;
-        $this->resetPosts(); // Reset the post list after a filter is selected
+        $this->resetPosts();
     }
 
-    public function updatedSelectedSubcategory()
+    public function updatedSelectedSubcategory($subcategoryId)
     {
-        $this->resetPosts(); // Reset the post list after a subcategory filter is selected
+        $this->resetPosts();
     }
 
     public function resetPosts()
     {
+        // Reset pagination and post loading
         $this->page = 1;
-        $this->hasMorePosts = true;
-        $this->blogPosts = [];
-        $this->loadMorePosts(); // Reload posts after resetting
-    }
-
-    public function loadMorePosts()
-    {
-        if ($this->hasMorePosts) {
-            $newPosts = BlogPost::with('media')
-                ->when($this->selectedCategory, function ($query) {
-                    $query->where('category_id', $this->selectedCategory);
-                })
-                ->when($this->selectedSubcategory, function ($query) {
-                    $query->where('subcategory_id', $this->selectedSubcategory);
-                })
-                ->latest()
-                ->paginate(10, ['*'], 'page', $this->page);
-
-            if ($newPosts->isNotEmpty()) {
-                $this->blogPosts = array_merge($this->blogPosts, $newPosts->items());
-                $this->page++;
-                $this->hasMorePosts = $newPosts->hasMorePages();
-            } else {
-                $this->hasMorePosts = false;
-            }
-        }
+        $this->hasMorePages = true;
+        $this->loadedPosts = [];
+        $this->loadMorePosts();
     }
 
     public function createBlogPost()
@@ -110,13 +94,21 @@ class Blog extends Component
     {
         $this->editMode = true;
         $this->postIdBeingEdited = $postId;
+
+        // Find the post and load its details
         $post = BlogPost::findOrFail($postId);
 
+        // Load post data into the form fields
         $this->title = $post->title;
         $this->description = $post->description;
         $this->details = $post->details;
         $this->selectedCategory = $post->category_id;
         $this->selectedSubcategory = $post->subcategory_id;
+
+        // Fetch subcategories for the selected category
+        if ($this->selectedCategory) {
+            $this->subcategories = BlogSubCategory::where('category_id', $this->selectedCategory)->get();
+        }
     }
 
     public function updateBlogPost()
@@ -139,6 +131,7 @@ class Blog extends Component
         ]);
 
         $this->resetForm();
+        $this->resetPosts();
     }
 
     public function deletePost($postId)
@@ -161,6 +154,9 @@ class Blog extends Component
 
         // Delete the post itself
         $post->delete();
+
+        // Refresh the component to update the UI
+        $this->resetPosts();
     }
 
     public function resetForm()
@@ -176,10 +172,45 @@ class Blog extends Component
         $this->postIdBeingEdited = null;
     }
 
+    // Method to load more posts for infinite scrolling
+    public function loadMorePosts()
+    {
+        if (!$this->hasMorePages) {
+            return;
+        }
+
+        $query = BlogPost::with('media');
+
+        if ($this->selectedCategory) {
+            $query->where('category_id', $this->selectedCategory);
+        }
+
+        if ($this->selectedSubcategory) {
+            $query->where('subcategory_id', $this->selectedSubcategory);
+        }
+
+        $newPosts = $query->latest()->skip(($this->page - 1) * $this->postsPerPage)->take($this->postsPerPage)->get();
+
+        if ($newPosts->isEmpty()) {
+            $this->hasMorePages = false;
+        } else {
+            // Add new posts to the loaded posts
+            $this->loadedPosts = array_merge($this->loadedPosts, $newPosts->toArray());
+
+            // Check if there are more posts to load
+            if ($newPosts->count() < $this->postsPerPage) {
+                $this->hasMorePages = false;
+            } else {
+                $this->page++;
+            }
+        }
+    }
+
     public function render()
     {
         return view('livewire.blog', [
-            'blogPosts' => $this->blogPosts,
+            'blogPosts' => $this->loadedPosts,
+            'hasMorePages' => $this->hasMorePages,
         ])->extends("layouts.app");
     }
 }

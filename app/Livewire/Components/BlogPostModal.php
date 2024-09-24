@@ -19,7 +19,7 @@ class BlogPostModal extends Component
     public $description;
     public $details;
     public $images = [];
-    public $video;
+    public $video = []; // Update this to be an array to support multiple video uploads
     public $is_public = 1; // Default to "Public"
     public $categories = [];
     public $subcategories = [];
@@ -60,7 +60,7 @@ class BlogPostModal extends Component
             'blogCategory' => 'required|exists:blog_categories,id',
             'blogSubCategory' => 'nullable|exists:blog_subcategories,id',
             'images.*' => 'nullable|image|max:51200', // 50 MB in kilobytes
-            'video' => 'nullable|mimes:mp4,avi,mkv|max:51200', // 50 MB in kilobytes
+            'video.*' => 'nullable|mimes:mp4,avi,mkv|max:51200', // Validate multiple video files
             'is_public' => 'required|boolean', // 1 for Public, 0 for Friends
         ]);
 
@@ -108,13 +108,15 @@ class BlogPostModal extends Component
 
             // Process video and save to user-specific folder
             if ($this->video) {
-                $videoFilePath = $this->video->store("blog_posts/{$blogPost->user_id}/videos", 'public');
-                BlogPostMedia::create([
-                    'blog_post_id' => $blogPost->id, // Correct column name
-                    'file_type' => 'video',
-                    'file' => $videoFilePath,
-                    'position' => 'general',
-                ]);
+                foreach ($this->video as $video) {
+                    $videoPath = $video->store("blog_posts/{$blogPost->user_id}/videos", 'public');
+                    BlogPostMedia::create([
+                        'blog_post_id' => $blogPost->id, // Correct column name
+                        'file_type' => 'video',
+                        'file' => $videoPath,
+                        'position' => 'general',
+                    ]);
+                }
             }
 
             DB::commit();

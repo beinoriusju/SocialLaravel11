@@ -14,6 +14,8 @@ use App\Livewire\Friends;
 use App\Livewire\FriendsRequests;
 use App\Livewire\UserProfile;
 use App\Livewire\Chat;
+use App\Http\Controllers\Backend\UserDataTableController;
+
 
 // Language switching routes
 Route::get('/set-language/lt', function () {
@@ -49,6 +51,12 @@ Route::middleware(['auth', 'verified', SetLanguage::class])->group(function () {
     // })->name('dashboard');
 });
 Route::view('/account-inactive', 'account-inactive')->name('account.inactive');
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/admin/users', [UserDataTableController::class, 'index'])->name('users.index');
+    Route::post('/admin/users/status', [UserDataTableController::class, 'toggleStatus'])->name('users.toggleStatus');
+});
 
 // Profile Routes
 Route::middleware('auth')->group(function () {

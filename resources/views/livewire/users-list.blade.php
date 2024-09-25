@@ -16,7 +16,7 @@
         <div class="container">
             <div class="row">
                 @foreach ($users as $user)
-                <div class="col-md-6">
+                <div class="col-md-6" style="padding-bottom: 30px">
                     <div class="card card-block card-stretch card-height">
                         <div class="card-body profile-page p-0">
                             <div class="profile-header-image">
@@ -38,7 +38,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mt-2 d-flex align-items-center justify-content-center position-absolute right-15 top-10 me-2">
+                                            <div class="mt-4 d-flex align-items-center justify-content-center position-absolute right-15 top-10 me-2">
                                                 @if (auth()->id() !== $user->id && $friendRequests->where('user_id', auth()->id())->where('friend_id', $user->id)->where('status', 'pending')->count() > 0)
                                                     <button wire:click="removeFriend('{{ $user->id }}')" class="p-3 text-white bg-warning d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Cancel') }}</button>
                                                 @elseif ($friendRequests->where('friend_id', auth()->id())->where('user_id', $user->id)->where('status', 'pending')->count() > 0)
@@ -47,9 +47,11 @@
                                                 @elseif ($user->is_friend(auth()->id()))
                                                     <button class="p-3 text-white bg-info d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Friend') }}</button>
                                                 @else
-                                                    <button wire:click="addFriend('{{ $user->id }}')" class="p-3 text-white bg-success d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Add friend') }}</button>
+                                                    <button wire:click="addFriend('{{ $user->id }}')" class="p-3 text-white bg-success d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Add Friend') }}</button>
                                                 @endif
-
+                                                @if(auth()->user()->role === 'admin')
+                                                    <button wire:click="deleteUser({{ $user->id }})" class="p-3 text-white bg-danger d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Delete User') }}</button>
+                                                @endif
                                                 <a href="/chat/{{ $user->id }}" class="d-none d-lg-block bg-greylight btn-round-lg ms-2 rounded-3 text-grey-700">
                                                     <i class="font-md" style="margin-top: -10px"></i>
                                                 </a>

@@ -1,0 +1,34 @@
+private function deleteUserFiles(User $user)
+{
+    // Delete images
+    $images = Storage::allFiles("posts/{$user->id}/images");
+    foreach ($images as $image) {
+        Storage::delete($image);
+    }
+
+    // Delete videos
+    $videos = Storage::allFiles("posts/{$user->id}/videos");
+    foreach ($videos as $video) {
+        Storage::delete($video);
+    }
+
+    // Delete profile images
+    $profileImages = Storage::allFiles("profileImages/{$user->id}");
+    foreach ($profileImages as $image) {
+        Storage::delete($image);
+    }
+
+    // Delete event images and videos
+    $events = $user->events; // Assuming User model has a relationship with events
+    foreach ($events as $event) {
+        $eventImages = Storage::allFiles("events/{$event->user_id}/images");
+        foreach ($eventImages as $image) {
+            Storage::delete($image);
+        }
+
+        $eventVideos = Storage::allFiles("events/{$event->user_id}/videos");
+        foreach ($eventVideos as $video) {
+            Storage::delete($video);
+        }
+    }
+}

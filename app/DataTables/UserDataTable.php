@@ -22,7 +22,14 @@ class UserDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($user) {
-                return '<button data-id="' . $user->id . '" class="btn btn-danger delete-item"><i class="far fa-trash-alt"></i></button>';
+                return '
+                    <form action="' . route('users.toggleStatus') . '" method="POST" style="display:inline;">
+                        ' . csrf_field() . '
+                        <input type="hidden" name="id" value="' . $user->id . '">
+                        <button type="submit" class="btn btn-warning toggle-status">
+                            <i class="fas fa-toggle-' . ($user->status === 'active' ? 'on' : 'off') . '"></i> ' . ($user->status === 'active' ? 'Deactivate' : 'Activate') . '
+                        </button>
+                    </form>';
             })
             ->rawColumns(['action'])
             ->setRowId('id');
@@ -36,7 +43,7 @@ class UserDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        return $model->newQuery()->select('id', 'username', 'created_at', 'updated_at');
+        return $model->newQuery()->select('id', 'username', 'created_at', 'updated_at', 'status');
     }
 
     public function html(): HtmlBuilder
@@ -67,10 +74,11 @@ class UserDataTable extends DataTable
         return [
             Column::make('id'),
             Column::make('username'),
+            Column::make('status'),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(100)
+                  ->width(200) // Adjust the width to fit buttons
                   ->addClass('text-center'),
             Column::make('created_at'),
             Column::make('updated_at'),

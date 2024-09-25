@@ -9,6 +9,7 @@ use App\Models\Friend;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class UsersList extends Component
 {
@@ -181,6 +182,78 @@ class UsersList extends Component
             DB::rollBack();
             Log::error('Transaction failed: ' . $th->getMessage());
             throw $th;
+        }
+    }
+
+    public function deleteUser($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            $this->dispatch('alert', [
+                'type' => 'error', 'message' => 'User not found'
+            ]);
+            return;
+        }
+
+        DB::beginTransaction();
+        try {
+            // Delete associated files
+            $this->deleteUserFiles($user);
+
+            // Delete the user
+            $user->delete();
+
+            DB::commit();
+            $this->dispatch('alert', [
+                'type' => 'success', 'message' => 'User deleted successfully'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Transaction failed: ' . $th->getMessage());
+            $this->dispatch('alert', [
+                'type' => 'error', 'message' => 'Failed to delete user'
+            ]);
+            throw $th;
+        }
+    }
+
+    public function deleteUserFiles($user)
+    {
+        if ($user) {
+            // Delete the user's profile image folder
+            $profileImageDirectory = "public/profileImages/{$user->id}";
+            if (Storage::exists($profileImageDirectory)) {
+                Storage::deleteDirectory($profileImageDirectory);
+            }
+
+            // Delete the user's posts images and videos folder
+            $postsImagesDirectory = "public/posts/{$user->id}/images";
+            $postsVideosDirectory = "public/posts/{$user->id}/videos";
+
+            if (Storage::exists($postsImagesDirectory)) {
+            Storage::deleteDirectory($postsImagesDirectory);
+            }
+
+            if (Storage::exists($postsVideosDirectory)) {
+            Storage::deleteDirectory($postsVideosDirectory);
+          }
+            // Delete event images and videos for each event
+            $events = $user->events; // Assuming User model has a relationship with events
+            if ($events) {
+                foreach ($events as $event) {
+                  $eventImagesDirectory = "public/events/{$event->user_id}/images";
+                  $eventVideosDirectory = "public/events/{$event->user_id}/videos";
+
+                    if (Storage::exists($eventImagesDirectory)) {
+                        Storage::deleteDirectory($eventImagesDirectory);
+                    }
+
+                    if (Storage::exists($eventVideosDirectory)) {
+                        Storage::deleteDirectory($eventVideosDirectory);
+                    }
+                }
+            }
         }
     }
 

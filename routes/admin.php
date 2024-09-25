@@ -74,7 +74,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::resource('blogsub-category', BlogSubCategoryController::class);
 
         Route::get('users', [UserDataTableController::class, 'index'])->name('users');
-
+      
 
     });
 });

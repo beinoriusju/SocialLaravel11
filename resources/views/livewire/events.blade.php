@@ -86,24 +86,24 @@
                                             <h5 class="mb-2">{{ $event->title }}</h5>
                                             <p>{{ $event->description }}</p>
                                             <a href="{{ route('event.post', $event->id) }}" class="d-flex align-items-center">
-                                                More Details <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
+                                                {{ __('translations.More details') }} <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
                                             </a>
 
                                             <!-- Show the Update Button only to the Event Creator -->
                                             @if (auth()->id() === $event->user_id)
-                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">Update Event</button>
+                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update event') }}</button>
                                             @endif
 
                                             <!-- Attending / Not Attending Buttons -->
                                             @if ($event->attendees->contains(auth()->user()->id))
-                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-danger mt-3">Not Attending</button>
+                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-danger mt-3">{{ __('translations.Not attending') }}</button>
                                             @else
-                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-success mt-3">Attending</button>
+                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-success mt-3">{{ __('translations.Attending') }}</button>
                                             @endif
 
                                             <!-- Button to show attendees modal -->
                                             <button wire:click="showAttendees({{ $event->id }})" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#attendeesModal">
-                                                Show Attendees
+                                                {{ __('translations.Show attendees') }}
                                             </button>
                                         </div>
                                     </div>
@@ -121,19 +121,19 @@
 
                                             <!-- Show the Update Button only to the Event Creator -->
                                             @if (auth()->id() === $event->user_id)
-                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">Update Event</button>
+                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update event') }}</button>
                                             @endif
 
                                             <!-- Attending / Not Attending Buttons -->
                                             @if ($event->attendees->contains(auth()->user()->id))
-                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-danger mt-3">Not Attending</button>
+                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-danger mt-3">{{ __('translations.Not attending') }}</button>
                                             @else
-                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-success mt-3">Attending</button>
+                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-success mt-3">{{ __('translations.Attending') }}</button>
                                             @endif
 
                                             <!-- Button to show attendees modal -->
                                             <button wire:click="showAttendees({{ $event->id }})" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#attendeesModal">
-                                                Show Attendees
+                                              {{ __('translations.Show attendees') }}
                                             </button>
                                         </div>
                                     </div>

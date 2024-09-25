@@ -28,7 +28,7 @@
                                                             <a href="{{ route('userprofile', ['user' => $friendUser->id]) }}">{{ $friendUser->username }}</a>
                                                         </h4>
                                                         <!-- Unfriend Button -->
-                                                        <button wire:click="unfriend('{{ $friendUser->id }}')" class="btn btn-danger mt-2">Unfriend</button>
+                                                        <button wire:click="unfriend('{{ $friendUser->id }}')" class="btn btn-danger mt-2">{{ __('translations.Unfriend') }}</button>
                                                     </div>
                                                 </div>
                                             </div>

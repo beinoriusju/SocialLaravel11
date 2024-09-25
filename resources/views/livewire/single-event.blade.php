@@ -6,15 +6,15 @@
                <div class="card-body">
                    <!-- Event Title and Meta Information -->
                    <div class="event-description mt-3">
-                       <h5 class="mb-3 pb-3 border-bottom">{{ $event->title }}</h5>
+                       <h5 class="mb-3 pb-3 border-bottom">{{ __('translations.Ttile') }}: {{ $event->title }}</h5>
                        <div class="event-meta d-flex align-items-center mb-3 position-right-side flex-wrap">
                            <div class="date me-4 d-flex align-items-center">
                                <i class="material-symbols-outlined pe-2 md-18 text-primary">calendar_month</i>{{ $event->event_date->format('M d, Y') }}
                            </div>
                        </div>
 
-                       <p>{{ $event->description }}</p>
-                       <div>{!! $event->details !!}</div>
+                       <p>{{ __('translations.Description') }}: {{ $event->description }}</p>
+                       <div>{{ __('translations.Details') }}: {!! $event->details !!}</div>
 
                        <!-- Media Display (Images, Videos, YouTube Links) -->
                        @if ($event->media->isNotEmpty())
@@ -53,7 +53,7 @@
 
                                <!-- Show More Images -->
                                @if ($showMore)
-                                   <p>+{{ count($images) - $displayLimit }} more images</p>
+                                   <p>+{{ count($images) - $displayLimit }} {{ __('translations.more images') }}</p>
                                @endif
 
                                <!-- Lightbox for remaining images -->

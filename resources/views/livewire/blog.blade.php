@@ -134,8 +134,8 @@
                             <!-- Edit/Delete buttons -->
                             <div class="col-md-12 mt-3">
                               @if(auth()->check() && auth()->user()->role === 'admin')
-                                    <button wire:click="editPost({{ $post['id'] }})" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
-                                    <button wire:click="deletePost({{ $post['id'] }})" class="btn btn-danger btn-sm">Delete</button>
+                                    <button wire:click="editPost({{ $post['id'] }})" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Edit') }}</button>
+                                    <button wire:click="deletePost({{ $post['id'] }})" class="btn btn-danger btn-sm">{{ __('translations.Delete') }}</button>
                                 @endif
                             </div>
                         </div>

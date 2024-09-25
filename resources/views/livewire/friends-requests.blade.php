@@ -19,8 +19,8 @@
                                                     <h4>
                                                         <a href="{{ route('userprofile', ['user' => $request->user_id]) }}">{{ $request->user->username }}</a>
                                                     </h4>
-                                                    <button wire:click="acceptFriend('{{ $request->user_id }}')" class="btn btn-primary mt-2">Accept</button>
-                                                    <button wire:click="rejectFriend('{{ $request->user_id }}')" class="btn btn-danger mt-2">Reject</button>
+                                                    <button wire:click="acceptFriend('{{ $request->user_id }}')" class="btn btn-primary mt-2">{{ __('translations.Accept') }}</button>
+                                                    <button wire:click="rejectFriend('{{ $request->user_id }}')" class="btn btn-danger mt-2">{{ __('translations.Reject') }}</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -35,10 +35,10 @@
 
         <!-- Loading and no more requests message -->
         <div class="text-center mt-4" wire:loading>
-            <span>Loading more requests...</span>
+            <span>{{ __('translations.Loading more') }}</span>
         </div>
         <div class="text-center mt-4" id="noMoreRequestsMessage" style="display: none;">
-            <span>No more requests to load.</span>
+            <span>{{ __('translations.No more requests') }}</span>
         </div>
     </div>
 

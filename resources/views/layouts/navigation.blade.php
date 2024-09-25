@@ -26,11 +26,11 @@
                     <span class="nav-text">{{ __('translations.Events') }}</span>
                   </a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                   <a class="nav-link menu-arrow justify-content-start" href="#">
                     <span class="nav-text">{{ __('translations.Calendar') }}</span>
                   </a>
-                </li>
+                </li> -->
               </ul>
             </div>
           </div>

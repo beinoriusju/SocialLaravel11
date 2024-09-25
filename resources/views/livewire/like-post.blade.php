@@ -35,7 +35,7 @@
     </div>
     <div class="comment-block">
         <span class="fw-medium small" data-bs-toggle="collapse" data-bs-target="#commentcollapse{{ $post->id }}" role="button" aria-expanded="false" aria-controls="commentcollapse{{ $post->id }}">
-            {{ $post->comments}} comments
+            {{ $post->comments}} {{ __('translations.comments') }}
         </span>
     </div>
 </div>

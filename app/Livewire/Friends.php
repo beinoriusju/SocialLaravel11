@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Friend;
@@ -12,7 +13,43 @@ class Friends extends Component
 {
     use WithPagination;
 
-    // Unfriend logic with notification
+    public $friends = [];
+    public $friendsPerPage = 20; // Number of friends to load per request
+
+    public function mount()
+    {
+        $this->loadFriends();
+    }
+
+    public function loadFriends()
+    {
+        $this->friends = Friend::where(function($query) {
+            $query->where('user_id', auth()->id())
+                  ->orWhere('friend_id', auth()->id());
+        })
+        ->where('status', 'accepted')
+        ->limit($this->friendsPerPage)
+        ->get();
+    }
+
+    public function loadMoreFriends()
+    {
+        $currentPage = ceil(count($this->friends) / $this->friendsPerPage) + 1;
+        $newFriends = Friend::where(function($query) {
+            $query->where('user_id', auth()->id())
+                  ->orWhere('friend_id', auth()->id());
+        })
+        ->where('status', 'accepted')
+        ->paginate($this->friendsPerPage, ['*'], 'page', $currentPage);
+
+        if ($newFriends->isEmpty()) {
+            $this->dispatch('noMoreFriends');
+        } else {
+            $this->friends = array_merge($this->friends, $newFriends->items());
+            $this->dispatch('friendsLoaded', ['hasMorePages' => $newFriends->hasMorePages()]);
+        }
+    }
+
     public function unfriend($userId)
     {
         DB::beginTransaction();
@@ -39,29 +76,19 @@ class Friends extends Component
 
                 DB::commit();
                 session()->flash('message', 'You have unfriended this user.');
+                $this->loadFriends(); // Refresh the friends list after unfriending
             }
         } catch (\Throwable $th) {
             DB::rollBack();
             session()->flash('error', 'Failed to unfriend this user.');
             throw $th;
         }
-
-        $this->render(); // Refresh the friends list after unfriending
     }
 
-    // Fetch friends and handle pagination
     public function render()
     {
-        // Fetch accepted friends
-        $friends = Friend::where(function($query) {
-            $query->where('user_id', auth()->id())   // Friends of the logged-in user
-                  ->orWhere('friend_id', auth()->id());
-        })
-        ->where('status', 'accepted')
-        ->paginate(20);
-
         return view('livewire.friends', [
-            'friends' => $friends,
+            'friends' => $this->friends,
         ])->extends('layouts.app');
     }
 }

@@ -12,7 +12,37 @@ class FriendsRequests extends Component
 {
     use WithPagination;
 
-    // Accept a friend request
+    public $friendRequests = [];
+    public $requestsPerPage = 10; // Number of requests to load per request
+
+    public function mount()
+    {
+        $this->loadRequests();
+    }
+
+    public function loadRequests()
+    {
+        $this->friendRequests = Friend::where('friend_id', auth()->id())
+            ->where('status', 'pending')
+            ->limit($this->requestsPerPage)
+            ->get();
+    }
+
+    public function loadMoreRequests()
+    {
+        $currentPage = ceil(count($this->friendRequests) / $this->requestsPerPage) + 1;
+        $newRequests = Friend::where('friend_id', auth()->id())
+            ->where('status', 'pending')
+            ->paginate($this->requestsPerPage, ['*'], 'page', $currentPage);
+
+        if ($newRequests->isEmpty()) {
+            $this->dispatchBrowserEvent('noMoreRequests');
+        } else {
+            $this->friendRequests = array_merge($this->friendRequests, $newRequests->items());
+            $this->dispatchBrowserEvent('requestsLoaded', ['hasMorePages' => $newRequests->hasMorePages()]);
+        }
+    }
+
     public function acceptFriend($userId)
     {
         DB::beginTransaction();
@@ -35,6 +65,7 @@ class FriendsRequests extends Component
                 ]);
 
                 DB::commit();
+                $this->loadRequests(); // Refresh the requests list after accepting
             }
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -42,7 +73,6 @@ class FriendsRequests extends Component
         }
     }
 
-    // Reject a friend request
     public function rejectFriend($userId)
     {
         DB::beginTransaction();
@@ -65,6 +95,7 @@ class FriendsRequests extends Component
                 ]);
 
                 DB::commit();
+                $this->loadRequests(); // Refresh the requests list after rejecting
             }
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -72,16 +103,10 @@ class FriendsRequests extends Component
         }
     }
 
-    // Render the view
     public function render()
     {
-        // Fetch pending friend requests
-        $friendRequests = Friend::where('friend_id', auth()->id())
-                                ->where('status', 'pending')
-                                ->paginate(10);
-
         return view('livewire.friends-requests', [
-            'friendRequests' => $friendRequests,
+            'friendRequests' => $this->friendRequests,
         ])->extends('layouts.app');
     }
 }

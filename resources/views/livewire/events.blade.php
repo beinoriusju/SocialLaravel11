@@ -89,6 +89,11 @@
                                                 More Details <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
                                             </a>
 
+                                            <!-- Show the Update Button only to the Event Creator -->
+                                            @if (auth()->id() === $event->user_id)
+                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">Update Event</button>
+                                            @endif
+
                                             <!-- Attending / Not Attending Buttons -->
                                             @if ($event->attendees->contains(auth()->user()->id))
                                                 <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-danger mt-3">Not Attending</button>
@@ -113,6 +118,11 @@
                                             <a href="{{ route('event.post', $event->id) }}" class="d-flex align-items-center">
                                                 More Details <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
                                             </a>
+
+                                            <!-- Show the Update Button only to the Event Creator -->
+                                            @if (auth()->id() === $event->user_id)
+                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">Update Event</button>
+                                            @endif
 
                                             <!-- Attending / Not Attending Buttons -->
                                             @if ($event->attendees->contains(auth()->user()->id))
@@ -242,7 +252,7 @@
                         <!-- Event Date -->
                         <div class="form-group mb-3">
                             <label for="eventDate">{{ __('translations.Event Date') }}</label>
-                            <input type="date" id="eventDate" class="form-control" wire:model.lazy="event_date">
+                            <input type="date" id="eventDate" class="form-control" wire:model.live="event_date">
                         </div>
 
                         <button type="submit" class="btn btn-primary">{{ __('translations.Update') }}</button>

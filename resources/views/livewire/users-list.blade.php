@@ -28,32 +28,25 @@
                                         <div class="d-flex flex-wrap justify-content-between align-items-start">
                                             <div class="profile-detail d-flex">
                                               <div class="profile-img pe-lg-4">
-                                                <a href="{{ route('userprofile', ['user' => $user->id]) }}">
-                                                    <img src="{{ $user->image ? asset('storage/' . $user->image) : asset('front/images/default.png') }}" alt="profile-img" loading="lazy" class="avatar-130 img-fluid">
-                                                </a>
-                                              </div>
+                                                <a href="{{ route('userprofile', ['user' => $user['id']]) }}">
+                                                    <img src="{{ $user['image'] ? asset('storage/' . $user['image']) : asset('front/images/default.png') }}" alt="profile-img" loading="lazy" class="avatar-130 img-fluid">
+                                                </a>                                              </div>
                                                 <div class="user-data-block mt-md-0 mt-2">
-                                                    <h4>
-                                                      <a href="{{ route('userprofile', ['user' => $user->id]) }}">{{ $user->username }}</a>
-                                                    </h4>
+                                                  <h4>
+                                                      <a href="{{ route('userprofile', ['user' => $user['id']]) }}">{{ $user['username'] }}</a>
+                                                  </h4>
                                                 </div>
                                             </div>
 
                                             <div class="mt-2 d-flex align-items-center justify-content-center position-absolute right-15 top-10 me-2">
-                                                @if (auth()->id() == $user->id)
-                                                    <!-- <a href="#" class="p-3 text-white bg-primary d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">Edit</a> -->
-                                                @elseif ($friendRequests->where('user_id', auth()->id())->where('friend_id', $user->id)->where('status', 'pending')->count() > 0)
-                                                    <!-- Friend request sent by the logged-in user (Cancel option) -->
+                                                @if (auth()->id() !== $user->id && $friendRequests->where('user_id', auth()->id())->where('friend_id', $user->id)->where('status', 'pending')->count() > 0)
                                                     <button wire:click="removeFriend('{{ $user->id }}')" class="p-3 text-white bg-warning d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">Cancel</button>
                                                 @elseif ($friendRequests->where('friend_id', auth()->id())->where('user_id', $user->id)->where('status', 'pending')->count() > 0)
-                                                    <!-- Friend request received by the logged-in user (Accept/Reject options) -->
                                                     <button wire:click="acceptFriend('{{ $user->id }}')" class="p-3 text-white bg-primary d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">Accept</button>
                                                     <button wire:click="removeFriend('{{ $user->id }}')" class="p-3 text-white bg-danger d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">Reject</button>
                                                 @elseif ($user->is_friend(auth()->id()))
-                                                    <!-- Users are already friends -->
                                                     <button class="p-3 text-white bg-info d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">Friend</button>
                                                 @else
-                                                    <!-- No friend request sent or received -->
                                                     <button wire:click="addFriend('{{ $user->id }}')" class="p-3 text-white bg-success d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">Add Friend</button>
                                                 @endif
 
@@ -73,36 +66,35 @@
         </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="mt-4">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                @if ($users->onFirstPage())
-                <li class="page-item disabled">
-                    <span class="page-link">Previous</span>
-                </li>
-                @else
-                <li class="page-item">
-                    <a class="page-link" href="{{ $users->previousPageUrl() }}">Previous</a>
-                </li>
-                @endif
-
-                @for ($i = 1; $i <= $users->lastPage(); $i++)
-                <li class="page-item {{ $users->currentPage() == $i ? 'active' : '' }}">
-                    <a class="page-link" href="{{ $users->url($i) }}">{{ $i }}</a>
-                </li>
-                @endfor
-
-                @if ($users->hasMorePages())
-                <li class="page-item">
-                    <a class="page-link" href="{{ $users->nextPageUrl() }}">Next</a>
-                </li>
-                @else
-                <li class="page-item disabled">
-                    <span class="page-link">Next</span>
-                </li>
-                @endif
-            </ul>
-        </nav>
+    <div wire:loading class="text-center mt-4 loading-text">
+        <span>Loading more users...</span>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        window.addEventListener('scroll', function () {
+            if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {
+                @this.call('loadMoreUsers');
+            }
+        });
+
+        Livewire.on('noMoreUsers', function () {
+            const loadingText = document.querySelector('.loading-text');
+            if (loadingText) {
+                loadingText.textContent = "No more users to load.";
+                loadingText.classList.add('text-warning');
+            }
+        });
+
+        Livewire.on('usersLoaded', function (event) {
+            if (!event.hasMorePages) {
+                const loadingText = document.querySelector('.loading-text');
+                if (loadingText) {
+                    loadingText.textContent = "No more users to load.";
+                    loadingText.classList.add('text-warning');
+                }
+            }
+        });
+    });
+</script>

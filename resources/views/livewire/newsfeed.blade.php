@@ -286,7 +286,6 @@
                                                             <input type="text" wire:model.defer="editedComment" class="form-control" placeholder="{{ __('translations.Edit your comment...') }}">
                                                             <div class="mt-2">
                                                                 <button class="btn btn-sm btn-primary" wire:click="updateComment({{ $comment->id }})">{{ __('translations.Update') }}</button>
-                                                                <button class="btn btn-sm btn-secondary" wire:click="cancelEdit">{{ __('translations.Cancel') }}</button>
                                                             </div>
                                                         </div>
                                                         @else

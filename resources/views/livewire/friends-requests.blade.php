@@ -1,25 +1,27 @@
-<div class="content-inner" id="page_layout">
-    <div class="container">
-        <div class="row">
-            @foreach ($friendRequests as $request)
-                <div class="col-md-6">
-                    <div class="card card-block card-stretch card-height">
-                        <div class="card-body profile-page p-0">
-                            <div class="profile-info p-4">
-                                <div class="user-detail">
-                                    <div class="d-flex flex-wrap justify-content-between align-items-start">
-                                        <div class="profile-detail d-flex">
-                                            <div class="profile-img pe-lg-4">
-                                                <a href="{{ route('userprofile', ['user' => $request->user_id]) }}">
-                                                    <img src="{{ $request->user->image ? asset('storage/' . $request->user->image) : asset('front/images/default.png') }}" alt="profile-img" class="avatar-130 img-fluid">
-                                                </a>
-                                            </div>
-                                            <div class="user-data-block mt-md-0 mt-2">
-                                                <h4>
-                                                    <a href="{{ route('userprofile', ['user' => $request->user_id]) }}">{{ $request->user->username }}</a>
-                                                </h4>
-                                                <button wire:click="acceptFriend('{{ $request->user_id }}')" class="btn btn-primary mt-2">Accept</button>
-                                                <button wire:click="rejectFriend('{{ $request->user_id }}')" class="btn btn-danger mt-2">Reject</button>
+<div>
+    <div class="content-inner" id="page_layout">
+        <div class="container">
+            <div class="row">
+                @foreach ($friendRequests as $request)
+                    <div class="col-md-6">
+                        <div class="card card-block card-stretch card-height">
+                            <div class="card-body profile-page p-0">
+                                <div class="profile-info p-4">
+                                    <div class="user-detail">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-start">
+                                            <div class="profile-detail d-flex">
+                                                <div class="profile-img pe-lg-4">
+                                                    <a href="{{ route('userprofile', ['user' => $request->user_id]) }}">
+                                                        <img src="{{ $request->user->image ? asset('storage/' . $request->user->image) : asset('front/images/default.png') }}" alt="profile-img" class="avatar-130 img-fluid">
+                                                    </a>
+                                                </div>
+                                                <div class="user-data-block mt-md-0 mt-2">
+                                                    <h4>
+                                                        <a href="{{ route('userprofile', ['user' => $request->user_id]) }}">{{ $request->user->username }}</a>
+                                                    </h4>
+                                                    <button wire:click="acceptFriend('{{ $request->user_id }}')" class="btn btn-primary mt-2">Accept</button>
+                                                    <button wire:click="rejectFriend('{{ $request->user_id }}')" class="btn btn-danger mt-2">Reject</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -27,41 +29,36 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Loading and no more requests message -->
+        <div class="text-center mt-4" wire:loading>
+            <span>Loading more requests...</span>
+        </div>
+        <div class="text-center mt-4" id="noMoreRequestsMessage" style="display: none;">
+            <span>No more requests to load.</span>
         </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="mt-4">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                @if ($friendRequests->onFirstPage())
-                    <li class="page-item disabled">
-                        <span class="page-link">Previous</span>
-                    </li>
-                @else
-                    <li class="page-item">
-                        <a class="page-link" href="{{ $friendRequests->previousPageUrl() }}">Previous</a>
-                    </li>
-                @endif
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.addEventListener('scroll', function () {
+                if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {
+                    @this.call('loadMoreRequests');
+                }
+            });
 
-                @for ($i = 1; $i <= $friendRequests->lastPage(); $i++)
-                    <li class="page-item {{ $friendRequests->currentPage() == $i ? 'active' : '' }}">
-                        <a class="page-link" href="{{ $friendRequests->url($i) }}">{{ $i }}</a>
-                    </li>
-                @endfor
+            Livewire.on('noMoreRequests', function () {
+                document.getElementById('noMoreRequestsMessage').style.display = 'block';
+            });
 
-                @if ($friendRequests->hasMorePages())
-                    <li class="page-item">
-                        <a class="page-link" href="{{ $friendRequests->nextPageUrl() }}">Next</a>
-                    </li>
-                @else
-                    <li class="page-item disabled">
-                        <span class="page-link">Next</span>
-                    </li>
-                @endif
-            </ul>
-        </nav>
-    </div>
+            Livewire.on('requestsLoaded', function (event) {
+                if (!event.hasMorePages) {
+                    document.getElementById('noMoreRequestsMessage').style.display = 'block';
+                }
+            });
+        });
+    </script>
 </div>

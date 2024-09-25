@@ -9,11 +9,37 @@ use App\Models\Friend;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+
 class UsersList extends Component
 {
     use WithPagination;
 
-    // Function to accept a friend request
+    public $users = []; // Array to hold user data
+    public $usersPerPage = 20; // Number of users to load per request
+
+    public function mount()
+    {
+        $this->loadUsers();
+    }
+
+    public function loadUsers()
+    {
+        $this->users = User::limit($this->usersPerPage)->get();
+    }
+
+    public function loadMoreUsers()
+    {
+        $currentPage = ceil(count($this->users) / $this->usersPerPage) + 1;
+        $newUsers = User::paginate($this->usersPerPage, ['*'], 'page', $currentPage);
+
+        if ($newUsers->isEmpty()) {
+            $this->dispatch('noMoreUsers'); // Emit event if no more users
+        } else {
+            $this->users = array_merge($this->users, $newUsers->items());
+            $this->dispatch('usersLoaded', ['hasMorePages' => $newUsers->hasMorePages()]);
+        }
+    }
+
     public function acceptFriend($id)
     {
         $user = User::find($id);
@@ -21,46 +47,40 @@ class UsersList extends Component
         DB::beginTransaction();
         try {
             $req = Friend::where([
-                'user_id' => $id, // User who sent the request
+                'user_id' => $id,
                 'friend_id' => auth()->id(),
-                'status' => 'pending', // Ensure it's a pending request
+                'status' => 'pending',
             ])->first();
 
             if ($req) {
-                $req->status = 'accepted'; // Mark the request as accepted
+                $req->status = 'accepted';
                 $req->save();
 
-                Log::info('Friend request accepted, creating notification'); // Add log for debugging
+                Log::info('Friend request accepted, creating notification');
 
-                // Create notification for accepted friend request
                 Notification::create([
                     'type' => 'friend_accepted',
-                    'sender_id' => auth()->id(), // The logged-in user who accepted the request
-                    'receiver_id' => $user->id, // Notify the requester
+                    'sender_id' => auth()->id(),
+                    'receiver_id' => $user->id,
                     'message' => 'accepted your friend request',
                     'url' => '#',
                 ]);
 
                 DB::commit();
-
-                Log::info('Transaction committed successfully'); // Add log to confirm transaction success
-
-                // Dispatch browser event for success
                 $this->dispatch('alert', [
                     'type' => 'success', 'message' => 'Friend request accepted'
                 ]);
             } else {
-                Log::error('Friend request not found or is not pending'); // Log error if not found
+                Log::error('Friend request not found or is not pending');
             }
 
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Transaction failed: ' . $th->getMessage()); // Log any error that occurs
+            Log::error('Transaction failed: ' . $th->getMessage());
             throw $th;
         }
     }
 
-    // Function to add a new friend (send a friend request)
     public function addFriend($id)
     {
         $user = User::find($id);
@@ -84,45 +104,39 @@ class UsersList extends Component
 
         DB::beginTransaction();
         try {
-            Log::info('Sending friend request'); // Debug log for friend request sending
+            Log::info('Sending friend request');
 
-            // Create the friend request
             Friend::create([
                 'user_id' => auth()->id(),
                 'friend_id' => $user->id,
                 'status' => 'pending',
             ]);
 
-            // Create notification for friend request
             Notification::create([
                 'type' => 'friend_request',
-                'sender_id' => auth()->id(), // The logged-in user who is sending the request
-                'receiver_id' => $user->id, // Notify the receiver of the request
+                'sender_id' => auth()->id(),
+                'receiver_id' => $user->id,
                 'message' => 'sent you a friend request',
                 'url' => '#',
             ]);
 
             DB::commit();
-            Log::info('Friend request and notification created successfully'); // Log success
-
             $this->dispatch('alert', [
                 'type' => 'success', 'message' => 'Friend request sent to ' . $user->username
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Transaction failed: ' . $th->getMessage()); // Log any error that occurs
+            Log::error('Transaction failed: ' . $th->getMessage());
             throw $th;
         }
     }
 
-    // Function to remove or cancel a friend request (or unfriend)
     public function removeFriend($id)
     {
         $user = User::find($id);
 
         DB::beginTransaction();
         try {
-            // Find existing friendship or pending request
             $friendship = Friend::where(function ($query) use ($user) {
                 $query->where('user_id', auth()->id())
                       ->where('friend_id', $user->id);
@@ -132,62 +146,52 @@ class UsersList extends Component
             })->first();
 
             if ($friendship) {
-                $status = $friendship->status; // Capture the status before deleting
-                $friendship->delete(); // Delete the friendship
+                $status = $friendship->status;
+                $friendship->delete();
 
-                Log::info('Friend request/friendship removed, creating notification'); // Debug log
+                Log::info('Friend request/friendship removed, creating notification');
 
-                // Send notification based on the status
                 if ($status === 'pending') {
                     Notification::create([
                         'type' => 'friend_request_canceled',
-                        'sender_id' => auth()->id(), // The logged-in user who canceled the request
-                        'receiver_id' => $user->id, // Notify the other party
+                        'sender_id' => auth()->id(),
+                        'receiver_id' => $user->id,
                         'message' => 'canceled the friend request',
                         'url' => '#',
                     ]);
                 } elseif ($status === 'accepted') {
                     Notification::create([
                         'type' => 'unfriend',
-                        'sender_id' => auth()->id(), // The logged-in user who unfriended
-                        'receiver_id' => $user->id, // Notify the other party
+                        'sender_id' => auth()->id(),
+                        'receiver_id' => $user->id,
                         'message' => 'has unfriended you',
                         'url' => '#',
                     ]);
                 }
 
                 DB::commit();
-                Log::info('Notification for friend request removal created successfully'); // Log success
-
                 $this->dispatch('alert', [
                     'type' => 'success', 'message' => 'Friend request or friendship removed with ' . $user->username
                 ]);
             } else {
-                Log::error('No existing friendship or request found'); // Log error if not found
+                Log::error('No existing friendship or request found');
             }
 
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Transaction failed: ' . $th->getMessage()); // Log any error that occurs
+            Log::error('Transaction failed: ' . $th->getMessage());
             throw $th;
         }
     }
 
-    // Pass additional friend request data to the Blade view
     public function render()
     {
-        // Get all users
-        $users = User::paginate(20);
-
-        // Fetch all friend requests where the logged-in user is involved (sent or received)
-        $friendRequests = Friend::where(function($query) {
-            $query->where('user_id', auth()->id())   // Requests sent by logged-in user
-                  ->orWhere('friend_id', auth()->id()); // Requests received by logged-in user
-        })->get();
-
         return view('livewire.users-list', [
-            'users' => $users,
-            'friendRequests' => $friendRequests  // Pass friend requests to the Blade view
+            'users' => $this->users,
+            'friendRequests' => Friend::where(function ($query) {
+                $query->where('user_id', auth()->id())
+                      ->orWhere('friend_id', auth()->id());
+            })->get(),
         ])->extends('layouts.app');
     }
 }

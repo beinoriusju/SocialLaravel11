@@ -9,29 +9,29 @@
                             <div class="row">
                                 <!-- Category Filter -->
                                 <div class="col-md-4 mb-3">
-                                    <label for="categoryFilter">{{ __('Select Category') }}</label>
+                                    <label for="categoryFilter">{{ __('translations.Select Category') }}</label>
                                     <select id="categoryFilter" class="form-select" wire:model.lazy="selectedCategory">
-                                        <option value="">{{ __('All Categories') }}</option>
+                                        <option value="">{{ __('translations.All Categories') }}</option>
                                         @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            <option value="{{ $category->id }}">{{ __('translations.' . $category->name) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
 
                                 <!-- Subcategory Filter -->
                                 <div class="col-md-4 mb-3">
-                                    <label for="subcategoryFilter">{{ __('Select Subcategory') }}</label>
+                                    <label for="subcategoryFilter">{{ __('translations.Select Subcategory') }}</label>
                                     <select id="subcategoryFilter" class="form-select" wire:model.lazy="selectedSubcategory" {{ empty($subcategories) ? 'disabled' : '' }}>
-                                        <option value="">{{ __('All Subcategories') }}</option>
+                                        <option value="">{{ __('translations.All Subcategories') }}</option>
                                         @foreach ($subcategories as $subcategory)
-                                            <option value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>
+                                            <option value="{{ $subcategory->id }}">{{ __('translations.' . $subcategory->name) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
 
                                 <!-- Date Range Filter -->
                                 <div class="col-md-4 mb-3">
-                                    <label for="dateRange">{{ __('Event Date (From - To)') }}</label>
+                                    <label for="dateRange">{{ __('translations.Event Date (From - To)') }}</label>
                                     <div class="d-flex">
                                         <input type="date" wire:model.lazy="startDate" class="form-control me-2" placeholder="{{ __('From Date') }}">
                                         <input type="date" wire:model.lazy="endDate" class="form-control" placeholder="{{ __('To Date') }}">
@@ -91,7 +91,7 @@
 
                                             <!-- Show the Update Button only to the Event Creator -->
                                             @if (auth()->id() === $event->user_id)
-                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update event') }}</button>
+                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update') }}</button>
                                             @endif
 
                                             <!-- Attending / Not Attending Buttons -->
@@ -116,12 +116,12 @@
                                             <h5 class="mb-2">{{ $event->title }}</h5>
                                             <p>{{ $event->description }}</p>
                                             <a href="{{ route('event.post', $event->id) }}" class="d-flex align-items-center">
-                                                More Details <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
+                                                {{ __('translations.More details') }} <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
                                             </a>
 
                                             <!-- Show the Update Button only to the Event Creator -->
                                             @if (auth()->id() === $event->user_id)
-                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update event') }}</button>
+                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update') }}</button>
                                             @endif
 
                                             <!-- Attending / Not Attending Buttons -->
@@ -215,7 +215,7 @@
                             <select id="eventCategory" class="form-select" wire:model.lazy="selectedCategory">
                                 <option value="">{{ __('translations.Select Category') }}</option>
                                 @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    <option value="{{ $category->id }}">{{ __('translations.' . $category->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -226,7 +226,7 @@
                             <select id="eventSubCategory" class="form-select" wire:model.lazy="selectedSubcategory" {{ empty($subcategories) ? 'disabled' : '' }}>
                                 <option value="">{{ __('translations.Select Subcategory') }}</option>
                                 @foreach ($subcategories as $subcategory)
-                                    <option value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>
+                                    <option value="{{ $subcategory->id }}">{{ __('translations.' . $subcategory->name) }}</option>
                                 @endforeach
                             </select>
                         </div>

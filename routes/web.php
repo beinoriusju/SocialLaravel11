@@ -28,12 +28,14 @@ Route::get('/set-language/en', function () {
 
 // Blog routes accessible to everyone with language setting applied
 Route::middleware(SetLanguage::class)->group(function () {
-    Route::get('/', Blog::class)->name('blog');
-    Route::get('/blog/{post}', SingleBlogPost::class)->name('blog.post');
+    // Route::get('/', Blog::class)->name('blog');
+    // Route::get('/blog/{post}', SingleBlogPost::class)->name('blog.post');
 });
 
 // Apply both 'auth', 'verified', and 'SetLanguage' middleware to other routes
 Route::middleware(['auth', 'verified', SetLanguage::class])->group(function () {
+    Route::get('/', Blog::class)->name('blog');
+    Route::get('/blog/{post}', SingleBlogPost::class)->name('blog.post');
     Route::get('/events', Events::class)->name('events');
     Route::get('/event/{event}', SingleEvent::class)->name('event.post');
     Route::get('/newsfeed', Newsfeed::class)->name('newsfeed');
@@ -46,6 +48,7 @@ Route::middleware(['auth', 'verified', SetLanguage::class])->group(function () {
     //     return view('dashboard');
     // })->name('dashboard');
 });
+Route::view('/account-inactive', 'account-inactive')->name('account.inactive');
 
 // Profile Routes
 Route::middleware('auth')->group(function () {

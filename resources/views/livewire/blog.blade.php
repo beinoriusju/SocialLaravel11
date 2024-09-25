@@ -9,22 +9,22 @@
                             <div class="row">
                                 <!-- Category Filter -->
                                 <div class="col-md-6 mb-3">
-                                    <label for="categoryFilter">{{ __('Select Category') }}</label>
+                                    <label for="categoryFilter">{{ __('translations.Select Category') }}</label>
                                     <select id="categoryFilter" class="form-select" wire:model.lazy="selectedCategory">
-                                        <option value="">{{ __('All Categories') }}</option>
+                                        <option value="">{{ __('translations.All Categories') }}</option>
                                         @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            <option value="{{ $category->id }}">{{ __('translations.' . $category->name) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
 
                                 <!-- Subcategory Filter -->
                                 <div class="col-md-6 mb-3">
-                                    <label for="subcategoryFilter">{{ __('Select Subcategory') }}</label>
+                                    <label for="subcategoryFilter">{{ __('translations.Select Subcategory') }}</label>
                                     <select id="subcategoryFilter" class="form-select" wire:model.lazy="selectedSubcategory" {{ empty($subcategories) ? 'disabled' : '' }}>
-                                        <option value="">{{ __('All Subcategories') }}</option>
+                                        <option value="">{{ __('translations.All Subcategories') }}</option>
                                         @foreach ($subcategories as $subcategory)
-                                            <option value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>
+                                            <option value="{{ $subcategory->id }}">{{ __('translations.' . $subcategory->name) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -79,11 +79,11 @@
                                         <p>{{ $post['description'] }}</p>
                                         @if ($additionalMediaCount > 0)
                                             <div class="text-muted mb-2">
-                                                {{ __('And :count more media', ['count' => $additionalMediaCount]) }}
+                                                {{ __('+ :count', ['count' => $additionalMediaCount]) }} {{ __('translations.more media') }}
                                             </div>
                                         @endif
                                         <a href="{{ route('blog.post', $post['id']) }}" class="d-flex align-items-center">
-                                            Read More <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
+                                            {{ __('translations.Read more') }} <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
                                         </a>
                                     </div>
                                 </div>
@@ -97,12 +97,12 @@
                                         <p>{{ $post['description'] }}</p>
                                         @if ($additionalMediaCount > 0)
                                             <div class="text-muted mb-2">
-                                                {{ __('And :count more media', ['count' => $additionalMediaCount]) }}
+                                                {{ __('+ :count more media', ['count' => $additionalMediaCount]) }}{{ __('translations.more media') }}
                                             </div>
                                         @endif
                                         <div class="blog-meta mb-2">
                                             <a href="{{ route('blog.post', $post['id']) }}" class="d-flex align-items-center">
-                                                Read More <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
+                                                {{ __('translations.Read more') }} <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
                                             </a>
                                         </div>
                                     </div>
@@ -146,12 +146,12 @@
 
             <!-- Infinite Scroll Trigger -->
             <div wire:loading class="col-lg-12 text-center mb-4">
-                <p>Loading more posts...</p>
+                <p>{{ __('translations.Loading more') }}</p>
             </div>
 
             @if (!$hasMorePages)
                 <div class="col-lg-12 text-center mb-4">
-                    <p>No more posts</p>
+                    <p>{{ __('translations.No more') }}</p>
                 </div>
             @endif
         </div>
@@ -173,7 +173,7 @@
                             <select id="blogCategory" class="form-select" wire:model.lazy="selectedCategory">
                                 <option value="">{{ __('translations.Select Category') }}</option>
                                 @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    <option value="{{ $category->id }}">{{ __('translations.' . $category->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -184,7 +184,7 @@
                             <select id="blogSubCategory" class="form-select" wire:model.lazy="selectedSubcategory" {{ empty($subcategories) ? 'disabled' : '' }}>
                                 <option value="">{{ __('translations.Select Subcategory') }}</option>
                                 @foreach ($subcategories as $subcategory)
-                                    <option value="{{ $subcategory->id }}">{{ $subcategory->name }}</option>
+                                    <option value="{{ $subcategory->id }}">{{ __('translations.' . $subcategory->name) }}</option>
                                 @endforeach
                             </select>
                         </div>

@@ -6,7 +6,7 @@
                 <div class="card-body">
                     <!-- Blog Title and Meta Information -->
                     <div class="blog-description mt-3">
-                        <h5 class="mb-3 pb-3 border-bottom">{{ __('translations.Title') }}: {{ $post->title }}</h5>
+                        <h5 class="mb-3 pb-3 border-bottom">{{ $post->title }}</h5>
                         <div class="blog-meta d-flex align-items-center mb-3 position-right-side flex-wrap">
                             <div class="date me-4 d-flex align-items-center">
                                 <i class="material-symbols-outlined pe-2 md-18 text-primary">calendar_month</i>{{ $post->created_at->diffForHumans() }}

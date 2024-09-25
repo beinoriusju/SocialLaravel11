@@ -563,7 +563,7 @@
 
                                                     <div class="row mb-2">
                                                         <div class="col-3">
-                                                            <h6>{{ __('translations.Birthday') }}:</h6>
+                                                            <h6>{{ __('translations.Birthday') }}</h6>
                                                         </div>
                                                         <div class="col-9">
                                                             <input type="date" wire:model.lazy="birthday" class="form-control">

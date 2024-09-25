@@ -24,10 +24,25 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Authenticate the user
         $request->authenticate();
 
+        // Regenerate the session to avoid session fixation attacks
         $request->session()->regenerate();
 
+        // Get the authenticated user
+        $user = Auth::user();
+
+        // Check if the user's status is inactive
+        if ($user->status === 'inactive') {
+            // Log the user out
+            Auth::logout();
+
+            // Redirect to the account inactive page with a message
+            return redirect()->route('account.inactive');
+        }
+
+        // Redirect to the intended route if the user is active
         return redirect()->intended(route('blog', absolute: false));
     }
 

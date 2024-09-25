@@ -67,7 +67,7 @@
     </div>
 
     <div wire:loading class="text-center mt-4 loading-text">
-        <span>{{ __('translations.Laoding more users') }}</span>
+        <span>{{ __('translations.Laoding more') }}</span>
     </div>
 </div>
 

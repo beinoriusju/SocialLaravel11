@@ -50,7 +50,9 @@
                                                     <button wire:click="addFriend('{{ $user->id }}')" class="p-3 text-white bg-success d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Add Friend') }}</button>
                                                 @endif
                                                 @if(auth()->user()->role === 'admin')
-                                                    <button wire:click="deleteUser({{ $user->id }})" class="p-3 text-white bg-danger d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Delete User') }}</button>
+                                                    <button onclick="confirmDeletion({{ $user->id }}, @this)" class="p-3 text-white bg-danger d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">
+                                                        {{ __('translations.Delete User') }}
+                                                    </button>
                                                 @endif
                                                 <a href="/chat/{{ $user->id }}" class="d-none d-lg-block bg-greylight btn-round-lg ms-2 rounded-3 text-grey-700">
                                                     <i class="font-md" style="margin-top: -10px"></i>
@@ -73,7 +75,15 @@
     </div>
 </div>
 
+<!-- The confirmDeletion function needs to be outside of any other function for global access -->
 <script>
+    function confirmDeletion(userId, component) {
+        if (confirm('Are you sure you want to delete this user?')) {
+            // Call the deleteUser method on the Livewire component
+            component.call('deleteUser', userId);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         window.addEventListener('scroll', function () {
             if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {

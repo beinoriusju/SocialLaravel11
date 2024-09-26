@@ -38,7 +38,7 @@
         <!-- Event Date -->
         <div class="form-group mb-3">
             <label for="eventDate">{{ __('translations.Event Date') }}</label>
-            <input type="date" id="eventDate" class="form-control" wire:model="event_date">
+            <input type="date" id="eventDate" class="form-control" wire:model.lazy="event_date">
         </div>
 
         <!-- Image and Video Upload Options -->
@@ -51,7 +51,7 @@
                         {{ __('translations.Photos') }}
                     </a>
                 </div>
-                <input type="file" wire:model="images" accept="image/*" id="eventImageInput" style="display: none;" multiple>
+                <input type="file" wire:model.lazy="images" accept="image/*" id="eventImageInput" style="display: none;" multiple>
             </li>
 
             <!-- Video Upload -->
@@ -62,7 +62,7 @@
                         {{ __('translations.Videos') }}
                     </a>
                 </div>
-                <input type="file" wire:model="videos" accept="video/*" id="eventVideoInput" style="display: none;" multiple>
+                <input type="file" wire:model.lazy="videos" accept="video/*" id="eventVideoInput" style="display: none;" multiple>
             </li>
         </ul>
 

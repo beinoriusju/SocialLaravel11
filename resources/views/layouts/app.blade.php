@@ -70,6 +70,7 @@
     <script src="{{ asset('front/js/ecommerce.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <!-- Custom JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('front/js/my.js') }}"></script>
 
 

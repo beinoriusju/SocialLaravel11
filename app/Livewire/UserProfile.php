@@ -66,9 +66,9 @@ class UserProfile extends Component
 
         // Fetch friends and media (photos)
         $this->fetchFriends();
-        $this->loadProfilePhotos();
-        $this->loadPostPhotos();
-        $this->loadMorePosts(); // Load initial posts
+        $this->loadProfilePhotos(); // Load initial profile photos
+        $this->loadPostPhotos();    // Load initial post photos
+        $this->loadMorePosts();     // Load initial posts
     }
 
     public function loadMorePosts()
@@ -335,59 +335,73 @@ class UserProfile extends Component
 
     public function loadProfilePhotos()
     {
-        // Remove 'public/' from the directory path
         $directory = "profileImages/{$this->user->id}/";
+
+        if (!$this->profilePhotosLoaded) {
+            return;
+        }
 
         if (Storage::disk('public')->exists($directory)) {
             $files = Storage::disk('public')->files($directory);
 
-            $cleanedFiles = array_map(function ($file) {
-                return $file; // No need to strip 'public/' as it's not present
-            }, $files);
+            // Load 10 photos at a time
+            $newPhotos = array_slice($files, ($this->profilePhotosPage - 1) * 10, 10);
 
-            $this->profilePhotos = array_merge($this->profilePhotos, array_slice($cleanedFiles, 10 * ($this->profilePhotosPage - 1), 10));
-            $this->profilePhotosPage++;
+            if (!empty($newPhotos)) {
+                $this->profilePhotos = array_merge($this->profilePhotos, $newPhotos);
 
-            if (count($files) <= 10 * $this->profilePhotosPage) {
+                // If fewer photos than 10 (i.e., last page), stop loading
+                if (count($newPhotos) < 10) {
+                    $this->profilePhotosLoaded = false;
+                }
+
+                $this->profilePhotosPage++;
+            } else {
                 $this->profilePhotosLoaded = false;
             }
         } else {
-            $this->profilePhotos = [];
+            $this->profilePhotosLoaded = false;
         }
     }
 
     public function loadPostPhotos()
     {
-        // Remove 'public/' from the directory path
         $directory = "posts/{$this->user->id}/images/";
+
+        if (!$this->postPhotosLoaded) {
+            return;
+        }
 
         if (Storage::disk('public')->exists($directory)) {
             $files = Storage::disk('public')->files($directory);
 
-            $cleanedFiles = array_map(function ($file) {
-                return $file; // No need to strip 'public/' as it's not present
-            }, $files);
+            // Load 10 photos at a time
+            $newPhotos = array_slice($files, ($this->postPhotosPage - 1) * 10, 10);
 
-            $this->postPhotos = array_merge($this->postPhotos, array_slice($cleanedFiles, 10 * ($this->postPhotosPage - 1), 10));
-            $this->postPhotosPage++;
+            if (!empty($newPhotos)) {
+                $this->postPhotos = array_merge($this->postPhotos, $newPhotos);
 
-            if (count($files) <= 10 * $this->postPhotosPage) {
+                // If fewer photos than 10 (i.e., last page), stop loading
+                if (count($newPhotos) < 10) {
+                    $this->postPhotosLoaded = false;
+                }
+
+                $this->postPhotosPage++;
+            } else {
                 $this->postPhotosLoaded = false;
             }
         } else {
-            $this->postPhotos = [];
+            $this->postPhotosLoaded = false;
         }
     }
 
     public function loadMoreProfilePhotos()
     {
-        $this->profilePhotosPage++;
         $this->loadProfilePhotos();
     }
 
     public function loadMorePostPhotos()
     {
-        $this->postPhotosPage++;
         $this->loadPostPhotos();
     }
 

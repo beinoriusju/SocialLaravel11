@@ -673,20 +673,24 @@
                                             <div class="card-body p-0">
                                                 <div class="d-grid gap-2 d-grid-template-1fr-13">
                                                     @foreach($profilePhotos as $photo)
-                                                        @if(Storage::disk('public')->exists($photo))
-                                                            <div class="">
-                                                                <div class="user-images position-relative overflow-hidden">
-                                                                  <a href="{{ Storage::disk('public')->url($photo) }}" target="_blank">
-                                                                      <img src="{{ Storage::disk('public')->url($photo) }}" class="img-fluid rounded" alt="{{ __('translations.photo-profile') }}" loading="lazy">
-                                                                  </a>                                                                </div>
+                                                        <div class="">
+                                                            <div class="user-images position-relative overflow-hidden">
+                                                                <a href="{{ Storage::disk('public')->url($photo) }}" target="_blank">
+                                                                    <img src="{{ Storage::disk('public')->url($photo) }}" class="img-fluid rounded" alt="{{ __('translations.photo-profile') }}" loading="lazy">
+                                                                </a>
                                                             </div>
-                                                        @endif
+                                                        </div>
                                                     @endforeach
                                                 </div>
 
-                                                @if($profilePhotosLoaded)
-                                                    <div class="mt-3 text-center">
-                                                        <button wire:click="loadMoreProfilePhotos" class="btn btn-primary">{{ __('translations.Load More') }}</button>
+                                                <!-- Infinite Scrolling Trigger -->
+                                                <div wire:loading class="text-center">
+                                                    <p>{{ __('translations.Loading more...') }}</p>
+                                                </div>
+
+                                                @if(!$profilePhotosLoaded)
+                                                    <div class="text-center">
+                                                        <p>{{ __('translations.No more photos to load') }}</p>
                                                     </div>
                                                 @endif
                                             </div>
@@ -697,21 +701,24 @@
                                             <div class="card-body p-0">
                                                 <div class="d-grid gap-2 d-grid-template-1fr-13">
                                                     @foreach($postPhotos as $photo)
-                                                        @if(Storage::disk('public')->exists($photo))
-                                                            <div class="">
-                                                                <div class="user-images position-relative overflow-hidden">
-                                                                    <a href="{{ asset('storage/' . $photo) }}" target="_blank">
-                                                                        <img src="{{ asset('storage/' . $photo) }}" class="img-fluid rounded" alt="{{ __('translations.post-photo') }}" loading="lazy">
-                                                                    </a>
-                                                                </div>
+                                                        <div class="">
+                                                            <div class="user-images position-relative overflow-hidden">
+                                                                <a href="{{ Storage::disk('public')->url($photo) }}" target="_blank">
+                                                                    <img src="{{ Storage::disk('public')->url($photo) }}" class="img-fluid rounded" alt="{{ __('translations.post-photo') }}" loading="lazy">
+                                                                </a>
                                                             </div>
-                                                        @endif
+                                                        </div>
                                                     @endforeach
                                                 </div>
 
-                                                @if($postPhotosLoaded)
-                                                    <div class="mt-3 text-center">
-                                                        <button wire:click="loadMorePostPhotos" class="btn btn-primary">{{ __('translations.Load More') }}</button>
+                                                <!-- Infinite Scrolling Trigger -->
+                                                <div wire:loading class="text-center">
+                                                    <p>{{ __('translations.Loading more...') }}</p>
+                                                </div>
+
+                                                @if(!$postPhotosLoaded)
+                                                    <div class="text-center">
+                                                        <p>{{ __('translations.No more photos to load') }}</p>
                                                     </div>
                                                 @endif
                                             </div>
@@ -722,6 +729,14 @@
                         </div>
                     </div>
 
+                    <script>
+                        window.addEventListener('scroll', function () {
+                            if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight) {
+                                @this.call('loadMoreProfilePhotos');
+                                @this.call('loadMorePostPhotos');
+                            }
+                        });
+                    </script>
 
                 </div>
             </div>

@@ -225,46 +225,36 @@ class UsersList extends Component
             $profileImageDirectory = "profileImages/{$user->id}";
             $postsImagesDirectory = "posts/{$user->id}/images";
             $postsVideosDirectory = "posts/{$user->id}/videos";
-
-            // Log paths for debugging
-            Log::info('Attempting to delete profile image directory: ' . Storage::disk('public')->path($profileImageDirectory));
+            $eventsImagesDirectory = "events/{$user->id}/images";
+            $eventsVideosDirectory = "events/{$user->id}/videos";
 
             // Delete profile image directory
             if (Storage::disk('public')->exists($profileImageDirectory)) {
-                if (Storage::disk('public')->deleteDirectory($profileImageDirectory)) {
-                    Log::info('Deleted profile image directory for user: ' . $user->id);
-                } else {
-                    Log::error('Failed to delete profile image directory for user: ' . $user->id);
-                }
-            } else {
-                Log::warning('Profile image directory does not exist for user: ' . $user->id);
+                Storage::disk('public')->deleteDirectory($profileImageDirectory);
             }
 
             // Delete posts images directory
-            Log::info('Attempting to delete posts images directory: ' . Storage::disk('public')->path($postsImagesDirectory));
             if (Storage::disk('public')->exists($postsImagesDirectory)) {
-                if (Storage::disk('public')->deleteDirectory($postsImagesDirectory)) {
-                    Log::info('Deleted posts images directory for user: ' . $user->id);
-                } else {
-                    Log::error('Failed to delete posts images directory for user: ' . $user->id);
-                }
-            } else {
-                Log::warning('Posts images directory does not exist for user: ' . $user->id);
+                Storage::disk('public')->deleteDirectory($postsImagesDirectory);
             }
 
             // Delete posts videos directory
-            Log::info('Attempting to delete posts videos directory: ' . Storage::disk('public')->path($postsVideosDirectory));
             if (Storage::disk('public')->exists($postsVideosDirectory)) {
-                if (Storage::disk('public')->deleteDirectory($postsVideosDirectory)) {
-                    Log::info('Deleted posts videos directory for user: ' . $user->id);
-                } else {
-                    Log::error('Failed to delete posts videos directory for user: ' . $user->id);
-                }
-            } else {
-                Log::warning('Posts videos directory does not exist for user: ' . $user->id);
+                Storage::disk('public')->deleteDirectory($postsVideosDirectory);
+            }
+
+            // Delete events images directory
+            if (Storage::disk('public')->exists($eventsImagesDirectory)) {
+                Storage::disk('public')->deleteDirectory($eventsImagesDirectory);
+            }
+
+            // Delete events videos directory
+            if (Storage::disk('public')->exists($eventsVideosDirectory)) {
+                Storage::disk('public')->deleteDirectory($eventsVideosDirectory);
             }
         }
     }
+
 
     public function render()
     {

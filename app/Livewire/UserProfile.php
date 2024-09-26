@@ -335,12 +335,14 @@ class UserProfile extends Component
 
     public function loadProfilePhotos()
     {
-        $directory = "public/profileImages/{$this->user->id}/";
-        if (Storage::exists($directory)) {
-            $files = Storage::files($directory);
+        // Remove 'public/' from the directory path
+        $directory = "profileImages/{$this->user->id}/";
+
+        if (Storage::disk('public')->exists($directory)) {
+            $files = Storage::disk('public')->files($directory);
 
             $cleanedFiles = array_map(function ($file) {
-                return str_replace('public/', '', $file);
+                return $file; // No need to strip 'public/' as it's not present
             }, $files);
 
             $this->profilePhotos = array_merge($this->profilePhotos, array_slice($cleanedFiles, 10 * ($this->profilePhotosPage - 1), 10));
@@ -356,12 +358,14 @@ class UserProfile extends Component
 
     public function loadPostPhotos()
     {
-        $directory = "public/posts/{$this->user->id}/images/";
-        if (Storage::exists($directory)) {
-            $files = Storage::files($directory);
+        // Remove 'public/' from the directory path
+        $directory = "posts/{$this->user->id}/images/";
+
+        if (Storage::disk('public')->exists($directory)) {
+            $files = Storage::disk('public')->files($directory);
 
             $cleanedFiles = array_map(function ($file) {
-                return str_replace('public/', '', $file);
+                return $file; // No need to strip 'public/' as it's not present
             }, $files);
 
             $this->postPhotos = array_merge($this->postPhotos, array_slice($cleanedFiles, 10 * ($this->postPhotosPage - 1), 10));

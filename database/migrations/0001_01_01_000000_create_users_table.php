@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('hobbies')->nullable();     // Hobbies field
             $table->text('interests')->nullable();   // Interests field
             $table->enum('role', ['admin', 'user'])->default('user');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->string('email')->unique();
             $table->boolean('is_private')->default(0);
             $table->boolean('is_banned')->default(0);

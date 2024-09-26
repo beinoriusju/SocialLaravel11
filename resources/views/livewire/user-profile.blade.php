@@ -654,69 +654,72 @@
 
                     <!-- Photos Tab -->
                     <div class="tab-pane fade {{ $activeTab == 'photos' ? 'show active' : '' }}" id="photos" role="tabpanel">
-                      <div class="card">
-                          <div class="card-body">
-                              <h2>{{ __('translations.Photos') }}</h2>
-                              <div class="friend-list-tab mt-2">
-                                  <ul class="nav nav-pills d-flex align-items-center justify-content-left list-item-tabs p-0 mb-2" role="tablist">
-                                      <li>
-                                          <a class="nav-link {{ $activePhotoTab == 'profilePhotos' ? 'active' : '' }}" wire:click.prevent="setActivePhotoTab('profilePhotos')" href="#" aria-selected="true" role="tab">{{ __('translations.Profile photos') }}</a>
-                                      </li>
-                                      <li>
-                                          <a class="nav-link {{ $activePhotoTab == 'postPhotos' ? 'active' : '' }}" wire:click.prevent="setActivePhotoTab('postPhotos')" href="#" aria-selected="false" role="tab">{{ __('translations.Post photos') }}</a>
-                                      </li>
-                                  </ul>
+                        <div class="card">
+                            <div class="card-body">
+                                <h2>{{ __('translations.Photos') }}</h2>
+                                <div class="friend-list-tab mt-2">
+                                    <ul class="nav nav-pills d-flex align-items-center justify-content-left list-item-tabs p-0 mb-2" role="tablist">
+                                        <li>
+                                            <a class="nav-link {{ $activePhotoTab == 'profilePhotos' ? 'active' : '' }}" wire:click.prevent="setActivePhotoTab('profilePhotos')" href="#" aria-selected="true" role="tab">{{ __('translations.Profile photos') }}</a>
+                                        </li>
+                                        <li>
+                                            <a class="nav-link {{ $activePhotoTab == 'postPhotos' ? 'active' : '' }}" wire:click.prevent="setActivePhotoTab('postPhotos')" href="#" aria-selected="false" role="tab">{{ __('translations.Post photos') }}</a>
+                                        </li>
+                                    </ul>
 
-                                  <div class="tab-content">
-                                      <!-- Profile Photos -->
-                                      <div class="tab-pane fade {{ $activePhotoTab == 'profilePhotos' ? 'show active' : '' }}" id="photosofyou" role="tabpanel">
-                                          <div class="card-body p-0">
-                                              <div class="d-grid gap-2 d-grid-template-1fr-13">
-                                                  @foreach($profilePhotos as $photo)
-                                                  <div class="">
-                                                      <div class="user-images position-relative overflow-hidden">
-                                                          <a href="{{ asset('storage/' . $photo) }}" target="_blank">
-                                                              <img src="{{ asset('storage/' . $photo) }}" class="img-fluid rounded" alt="{{ __('translations.photo-profile') }}" loading="lazy">
-                                                          </a>
-                                                      </div>
-                                                  </div>
-                                                  @endforeach
-                                              </div>
+                                    <div class="tab-content">
+                                        <!-- Profile Photos -->
+                                        <div class="tab-pane fade {{ $activePhotoTab == 'profilePhotos' ? 'show active' : '' }}" id="photosofyou" role="tabpanel">
+                                            <div class="card-body p-0">
+                                                <div class="d-grid gap-2 d-grid-template-1fr-13">
+                                                    @foreach($profilePhotos as $photo)
+                                                        @if(Storage::disk('public')->exists($photo))
+                                                            <div class="">
+                                                                <div class="user-images position-relative overflow-hidden">
+                                                                  <a href="{{ Storage::disk('public')->url($photo) }}" target="_blank">
+                                                                      <img src="{{ Storage::disk('public')->url($photo) }}" class="img-fluid rounded" alt="{{ __('translations.photo-profile') }}" loading="lazy">
+                                                                  </a>                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
 
-                                              @if($profilePhotosLoaded)
-                                              <div class="mt-3 text-center">
-                                                  <button wire:click="loadMoreProfilePhotos" class="btn btn-primary">{{ __('translations.Load More') }}</button>
-                                              </div>
-                                              @endif
-                                          </div>
-                                      </div>
+                                                @if($profilePhotosLoaded)
+                                                    <div class="mt-3 text-center">
+                                                        <button wire:click="loadMoreProfilePhotos" class="btn btn-primary">{{ __('translations.Load More') }}</button>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
 
-                                      <!-- Post Photos -->
-                                      <div class="tab-pane fade {{ $activePhotoTab == 'postPhotos' ? 'show active' : '' }}" id="your-photos" role="tabpanel">
-                                          <div class="card-body p-0">
-                                              <div class="d-grid gap-2 d-grid-template-1fr-13">
-                                                  @foreach($postPhotos as $photo)
-                                                  <div class="">
-                                                      <div class="user-images position-relative overflow-hidden">
-                                                          <a href="{{ asset('storage/' . $photo) }}" target="_blank">
-                                                              <img src="{{ asset('storage/' . $photo) }}" class="img-fluid rounded" alt="{{ __('translations.post-photo') }}" loading="lazy">
-                                                          </a>
-                                                      </div>
-                                                  </div>
-                                                  @endforeach
-                                              </div>
+                                        <!-- Post Photos -->
+                                        <div class="tab-pane fade {{ $activePhotoTab == 'postPhotos' ? 'show active' : '' }}" id="your-photos" role="tabpanel">
+                                            <div class="card-body p-0">
+                                                <div class="d-grid gap-2 d-grid-template-1fr-13">
+                                                    @foreach($postPhotos as $photo)
+                                                        @if(Storage::disk('public')->exists($photo))
+                                                            <div class="">
+                                                                <div class="user-images position-relative overflow-hidden">
+                                                                    <a href="{{ asset('storage/' . $photo) }}" target="_blank">
+                                                                        <img src="{{ asset('storage/' . $photo) }}" class="img-fluid rounded" alt="{{ __('translations.post-photo') }}" loading="lazy">
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
 
-                                              @if($postPhotosLoaded)
-                                              <div class="mt-3 text-center">
-                                                  <button wire:click="loadMorePostPhotos" class="btn btn-primary">{{ __('translations.Load More') }}</button>
-                                              </div>
-                                              @endif
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
+                                                @if($postPhotosLoaded)
+                                                    <div class="mt-3 text-center">
+                                                        <button wire:click="loadMorePostPhotos" class="btn btn-primary">{{ __('translations.Load More') }}</button>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
 

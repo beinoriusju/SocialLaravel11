@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 23, 2024 at 12:01 AM
+-- Generation Time: Sep 26, 2024 at 09:37 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -345,7 +345,7 @@ INSERT INTO `translations` (`id`, `language`, `key`, `value`, `created_at`, `upd
 (563, 'en', 'Write a comment...', 'Write a comment...', '2024-09-16 14:28:45', '2024-09-16 14:28:45'),
 (564, 'lt', 'Write a comment...', 'Palikite komentarą...', '2024-09-16 14:29:07', '2024-09-16 14:29:07'),
 (565, 'en', 'Likes', 'Likes', '2024-09-16 14:31:53', '2024-09-16 14:31:53'),
-(566, 'lt', 'Likes', 'Rekcijos', '2024-09-16 14:32:02', '2024-09-16 14:32:02'),
+(566, 'lt', 'Likes', 'Reakcijos', '2024-09-16 14:32:02', '2024-09-25 10:05:22'),
 (567, 'en', 'Add Friend', 'Add firend', '2024-09-19 05:32:28', '2024-09-19 05:33:31'),
 (568, 'lt', 'Add Friend', 'Pakviesti draugauti', '2024-09-19 05:33:15', '2024-09-19 05:33:15'),
 (569, 'en', 'Pending', 'Pending', '2024-09-19 05:34:58', '2024-09-19 05:34:58'),
@@ -373,7 +373,46 @@ INSERT INTO `translations` (`id`, `language`, `key`, `value`, `created_at`, `upd
 (591, 'en', 'more YouTube links', 'more YouTube links', '2024-09-21 12:34:49', '2024-09-21 12:34:49'),
 (592, 'lt', 'more YouTube links', 'daugiau youtube įrašų', '2024-09-21 12:35:07', '2024-09-21 12:35:07'),
 (593, 'en', 'Load More', 'Load More', '2024-09-21 14:07:34', '2024-09-21 14:07:34'),
-(594, 'lt', 'Load More', 'Daugiau', '2024-09-21 14:07:46', '2024-09-21 14:07:46');
+(594, 'lt', 'Load More', 'Daugiau', '2024-09-21 14:07:46', '2024-09-21 14:07:46'),
+(595, 'en', 'more media', 'more media', '2024-09-25 10:03:50', '2024-09-25 10:03:50'),
+(596, 'lt', 'more media', 'daugiau failų', '2024-09-25 10:04:09', '2024-09-25 10:04:09'),
+(597, 'en', 'All Categories', 'All Categories', '2024-09-25 10:41:24', '2024-09-25 10:41:24'),
+(598, 'lt', 'All Categories', 'Visos kategorijos', '2024-09-25 10:41:36', '2024-09-25 10:41:36'),
+(599, 'en', 'All Subcategories', 'All Subcategories', '2024-09-25 10:41:54', '2024-09-25 10:41:54'),
+(600, 'lt', 'All Subcategories', 'Visos subkategorijos', '2024-09-25 10:42:07', '2024-09-25 10:42:07'),
+(601, 'en', 'Read more', 'Read more', '2024-09-25 10:43:50', '2024-09-25 10:43:50'),
+(602, 'lt', 'Read more', 'Skaityti išsamiau', '2024-09-25 10:44:07', '2024-09-25 10:44:07'),
+(603, 'en', 'Loading more', 'Loading more', '2024-09-25 10:45:26', '2024-09-25 10:45:26'),
+(604, 'lt', 'Loading more', 'Kraunama daugiau įrašų', '2024-09-25 10:45:48', '2024-09-25 10:45:48'),
+(605, 'en', 'No more', 'No more', '2024-09-25 10:46:19', '2024-09-25 10:46:19'),
+(606, 'lt', 'No more', 'Nebėra įrašų', '2024-09-25 10:46:35', '2024-09-25 10:46:35'),
+(607, 'en', 'Details', 'Details', '2024-09-25 11:23:16', '2024-09-25 11:23:16'),
+(608, 'lt', 'Details', 'Išsamus aprašymas', '2024-09-25 11:23:34', '2024-09-25 11:23:34'),
+(609, 'en', 'All Media', 'All media', '2024-09-25 11:24:59', '2024-09-25 11:24:59'),
+(610, 'lt', 'All Media', 'Visi failai', '2024-09-25 11:25:09', '2024-09-25 11:25:09'),
+(611, 'en', 'comments', 'comments', '2024-09-25 11:25:40', '2024-09-25 11:25:40'),
+(612, 'lt', 'comments', 'komentarai', '2024-09-25 11:25:52', '2024-09-25 11:25:52'),
+(613, 'en', 'Event Date', 'Event date', '2024-09-25 12:05:22', '2024-09-25 12:05:22'),
+(614, 'lt', 'Event Date', 'Renginio data', '2024-09-25 12:05:32', '2024-09-25 12:05:32'),
+(615, 'lt', 'Blog post', 'Blogo įrašas', '2024-09-25 12:07:29', '2024-09-25 12:07:29'),
+(616, 'en', 'Event Date (From - To)', 'Event Date (From - To)', '2024-09-25 12:09:39', '2024-09-25 12:09:39'),
+(617, 'lt', 'Event Date (From - To)', 'Renginio data (nuo - iki)', '2024-09-25 12:10:00', '2024-09-25 12:10:00'),
+(618, 'en', 'More details', 'More details', '2024-09-25 12:10:14', '2024-09-25 12:10:14'),
+(619, 'lt', 'More details', 'Išsamiau', '2024-09-25 12:10:27', '2024-09-25 12:10:27'),
+(620, 'en', 'Not attending', 'Not attending', '2024-09-25 12:10:56', '2024-09-25 12:10:56'),
+(621, 'lt', 'Not attending', 'Nedalyvauju', '2024-09-25 12:11:13', '2024-09-25 12:11:13'),
+(622, 'en', 'Attending', 'Attending', '2024-09-25 12:11:24', '2024-09-25 12:11:24'),
+(623, 'lt', 'Attending', 'Dalyvauju', '2024-09-25 12:11:33', '2024-09-25 12:11:33'),
+(624, 'en', 'Show attendees', 'Show attendees', '2024-09-25 12:11:49', '2024-09-25 12:11:49'),
+(625, 'lt', 'Show attendees', 'Rodyti dalyvius', '2024-09-25 12:12:00', '2024-09-25 12:12:00'),
+(626, 'en', 'No more events available.', 'No more events available.', '2024-09-25 12:14:04', '2024-09-25 12:14:04'),
+(627, 'lt', 'No more events available.', 'Daugiau renginių nėra', '2024-09-25 12:14:19', '2024-09-25 12:14:19'),
+(628, 'en', 'Unfriend', 'Unfriend', '2024-09-25 12:23:00', '2024-09-25 12:23:00'),
+(629, 'lt', 'Unfriend', 'Nebedraugauti', '2024-09-25 12:23:28', '2024-09-25 12:23:28'),
+(630, 'en', 'Accept', 'Accept', '2024-09-25 12:24:05', '2024-09-25 12:24:05'),
+(631, 'lt', 'Accept', 'Priimti', '2024-09-25 12:24:16', '2024-09-25 12:24:16'),
+(632, 'en', 'Reject', 'Reject', '2024-09-25 12:24:30', '2024-09-25 12:24:30'),
+(633, 'lt', 'Reject', 'Atmesti', '2024-09-25 12:24:40', '2024-09-25 12:24:40');
 
 --
 -- Indexes for dumped tables
@@ -394,7 +433,7 @@ ALTER TABLE `translations`
 -- AUTO_INCREMENT for table `translations`
 --
 ALTER TABLE `translations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=595;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=634;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

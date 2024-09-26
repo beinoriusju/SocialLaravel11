@@ -187,9 +187,18 @@ class UsersList extends Component
 
     public function deleteUser($id)
     {
+        Log::info('Delete user function called with ID: ' . $id);
+        $this->confirmDeleteUser($id);
+    }
+
+    public function confirmDeleteUser($id)
+    {
+        Log::info('Trying to delete user with ID: ' . $id);
+
         $user = User::find($id);
 
         if (!$user) {
+            Log::warning('User not found for ID: ' . $id);
             $this->dispatch('alert', [
                 'type' => 'error', 'message' => 'User not found'
             ]);
@@ -198,25 +207,36 @@ class UsersList extends Component
 
         DB::beginTransaction();
         try {
+            Log::info('Deleting files for user: ' . $user->id);
+
             // Delete associated files
             $this->deleteUserFiles($user);
+
+            Log::info('Deleting user with ID: ' . $user->id);
 
             // Delete the user
             $user->delete();
 
             DB::commit();
+
+            Log::info('User deleted successfully with ID: ' . $user->id);
+
             $this->dispatch('alert', [
                 'type' => 'success', 'message' => 'User deleted successfully'
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error('Transaction failed: ' . $th->getMessage());
+
             $this->dispatch('alert', [
                 'type' => 'error', 'message' => 'Failed to delete user'
             ]);
+
             throw $th;
         }
     }
+
+
 
     public function deleteUserFiles($user)
     {

@@ -1,7 +1,7 @@
 <aside class="sidebar sidebar-default sidebar-base navs-rounded-all " id="first-tour" data-toggle="main-sidebar" data-sidebar="responsive">
     <div class="sidebar-header d-flex align-items-center justify-content-start position-relative">
         <a href="{{ url('/') }}" class="d-flex align-items-center gap-2 iq-header-logo">
-            <h3 class="logo-title" data-setting="app_name">{{ __('translations.Silaliskiai') }}</h3>
+            <h3 class="logo-title" data-setting="app_name">Social</h3>
         </a>
         <div class="sidebar-toggle" data-toggle="sidebar" data-active="true">
             <span class="menu-btn d-inline-block is-active">
@@ -37,12 +37,12 @@
                         <span class="item-name">{{ __('translations.Calendar') }}</span>
                     </a>
                 </li> -->
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="{{ route('chat') }}">
                         <i class="icon material-symbols-outlined">message</i>
                         <span class="item-name">{{ __('translations.Messages') }}</span>
                     </a>
-                </li>
+                </li> -->
                 <!-- <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="../dashboard/notification.html">
                         <i class="icon material-symbols-outlined">notifications</i>

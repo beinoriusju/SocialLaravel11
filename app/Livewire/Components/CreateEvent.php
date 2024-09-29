@@ -17,6 +17,7 @@ class CreateEvent extends Component
 
     public $title;
     public $description;
+    public $details; // Add this property for event details
     public $event_date;
     public $images = [];
     public $videos = []; // Multiple video support
@@ -59,6 +60,7 @@ class CreateEvent extends Component
         $this->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'details' => 'nullable|string', // Add this for event details validation
             'event_date' => 'required|date',
             'eventCategory' => 'required|exists:event_categories,id',
             'eventSubCategory' => 'nullable|exists:event_subcategories,id',
@@ -77,6 +79,7 @@ class CreateEvent extends Component
                 'user_id' => auth()->id(),
                 'title' => $this->title,
                 'description' => $this->description,
+                'details' => $this->details, // Store the event details
                 'event_date' => $this->event_date,
                 'category_id' => $this->eventCategory,
                 'subcategory_id' => $this->eventSubCategory,
@@ -158,7 +161,7 @@ class CreateEvent extends Component
     public function resetForm()
     {
         $this->reset([
-            'title', 'description', 'event_date', 'images', 'videos',
+            'title', 'description', 'details', 'event_date', 'images', 'videos',
             'eventCategory', 'eventSubCategory',
         ]);
     }

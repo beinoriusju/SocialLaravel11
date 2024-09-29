@@ -35,6 +35,12 @@
             <textarea id="eventDescription" class="form-control" wire:model.lazy="description" placeholder="..." rows="3"></textarea>
         </div>
 
+          <!-- Event Details (New Field) -->
+         <div class="form-group mb-3">
+             <label for="eventDetails">{{ __('translations.Details') }}</label>
+             <textarea id="eventDetails" class="form-control" wire:model.lazy="details" placeholder="Enter event details" rows="5"></textarea>
+         </div>
+
         <!-- Event Date -->
         <div class="form-group mb-3">
             <label for="eventDate">{{ __('translations.Event Date') }}</label>

@@ -27,36 +27,41 @@
                                     <div class="user-detail">
                                         <div class="d-flex flex-wrap justify-content-between align-items-start">
                                             <div class="profile-detail d-flex">
-                                              <div class="profile-img pe-lg-4">
-                                                <a href="{{ route('userprofile', ['user' => $user['id']]) }}">
-                                                    <img src="{{ $user['image'] ? asset('storage/' . $user['image']) : asset('front/images/default.png') }}" alt="profile-img" loading="lazy" class="avatar-130 img-fluid">
-                                                </a>                                              </div>
+                                                <div class="profile-img pe-lg-4">
+                                                    <a href="{{ route('userprofile', ['user' => $user['id']]) }}">
+                                                        <img src="{{ $user['image'] ? asset('storage/' . $user['image']) : asset('front/images/default.png') }}" alt="profile-img" loading="lazy" class="avatar-130 img-fluid">
+                                                    </a>
+                                                </div>
                                                 <div class="user-data-block mt-md-0 mt-2">
-                                                  <h4>
-                                                      <a href="{{ route('userprofile', ['user' => $user['id']]) }}">{{ $user['username'] }}</a>
-                                                  </h4>
+                                                    <h4>
+                                                        <a href="{{ route('userprofile', ['user' => $user['id']]) }}">{{ $user['username'] }}</a>
+                                                    </h4>
                                                 </div>
                                             </div>
 
                                             <div class="mt-4 d-flex align-items-center justify-content-center position-absolute right-15 top-10 me-2">
                                                 @if (auth()->id() !== $user->id && $friendRequests->where('user_id', auth()->id())->where('friend_id', $user->id)->where('status', 'pending')->count() > 0)
-                                                    <button wire:click="removeFriend('{{ $user->id }}')" class="p-3 text-white bg-warning d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Cancel') }}</button>
+                                                    <button wire:click="removeFriend('{{ $user->id }}')" class="p-3 text-white bg-warning rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Cancel') }}</button>
                                                 @elseif ($friendRequests->where('friend_id', auth()->id())->where('user_id', $user->id)->where('status', 'pending')->count() > 0)
-                                                    <button wire:click="acceptFriend('{{ $user->id }}')" class="p-3 text-white bg-primary d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Accept') }}</button>
-                                                    <button wire:click="removeFriend('{{ $user->id }}')" class="p-3 text-white bg-danger d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Reject') }}</button>
+                                                    <button wire:click="acceptFriend('{{ $user->id }}')" class="p-3 text-white bg-primary rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Accept') }}</button>
+                                                    <button wire:click="removeFriend('{{ $user->id }}')" class="p-3 text-white bg-danger rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Reject') }}</button>
                                                 @elseif ($user->is_friend(auth()->id()))
-                                                    <button class="p-3 text-white bg-info d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Friend') }}</button>
+                                                    <button class="p-3 text-white bg-info rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Friend') }}</button>
                                                 @else
-                                                    <button wire:click="addFriend('{{ $user->id }}')" class="p-3 text-white bg-success d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Add Friend') }}</button>
+                                                    <button wire:click="addFriend('{{ $user->id }}')" class="p-3 text-white bg-success rounded-3 font-xsssss text-uppercase fw-700 ls-3">{{ __('translations.Add Friend') }}</button>
                                                 @endif
+
                                                 @if(auth()->user()->role === 'admin')
-                                                    <button onclick="confirmDeletion({{ $user->id }}, @this)" class="p-3 text-white bg-danger d-none d-lg-block z-index-1 rounded-3 font-xsssss text-uppercase fw-700 ls-3">
+                                                    <!-- Make this button visible on all screen sizes -->
+                                                    <button onclick="confirmDeletion({{ $user->id }}, @this)" class="p-3 text-white bg-danger rounded-3 font-xsssss text-uppercase fw-700 ls-3">
                                                         {{ __('translations.Delete User') }}
                                                     </button>
                                                 @endif
-                                                <a href="/chat/{{ $user->id }}" class="d-none d-lg-block bg-greylight btn-round-lg ms-2 rounded-3 text-grey-700">
-                                                    <i class="font-md" style="margin-top: -10px"></i>
-                                                </a>
+
+                                                <!-- Chat Icon Button -->
+                                                <!-- <a href="/chat/{{ $user->id }}" class="bg-greylight btn-round-lg ms-2 rounded-3 text-grey-700">
+                                                    <i class="material-icons">chat</i>
+                                                </a> -->
                                             </div>
                                         </div>
                                     </div>
@@ -71,7 +76,7 @@
     </div>
 
     <div wire:loading class="text-center mt-4 loading-text">
-        <span>{{ __('translations.Laoding more') }}</span>
+        <span>{{ __('translations.Loading more') }}</span>
     </div>
 </div>
 

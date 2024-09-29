@@ -13,6 +13,12 @@ class UserSearch extends Component
     public $query = '';
     public $users = [];
     public $friendRequests = [];
+    protected $listeners = ['closeSearchDropdown'];
+
+    public function closeSearchDropdown()
+    {
+        $this->query = '';  // Clear the search query to close the dropdown
+    }
 
     public function updatedQuery()
     {

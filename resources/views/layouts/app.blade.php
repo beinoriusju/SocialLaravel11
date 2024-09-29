@@ -47,7 +47,7 @@
             <!-- End of main content -->
         </div>
 
-        @include("layouts.rightbar")
+        <!-- @include("layouts.rightbar") -->
     </main>
 
     <!-- JavaScript Libraries -->

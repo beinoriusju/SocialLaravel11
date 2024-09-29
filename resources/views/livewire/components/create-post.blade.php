@@ -72,7 +72,7 @@
                   <!-- Privacy Settings Dropdown -->
                   <div class="form-group">
                      <select id="is_public" class="form-select" wire:model="is_public">
-                        <option value="0">{{ __('translations.Public') }}</option>
+                        <option value="0" selected>{{ __('translations.Public') }}</option>
                         <option value="1">{{ __('translations.Friends') }}</option>
                      </select>
                   </div>

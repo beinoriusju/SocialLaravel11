@@ -67,6 +67,7 @@
                                                     </video>
                                                 @elseif ($media->file_type == 'youtube')
                                                     @php
+                                                        // Extract YouTube video ID only for this event's media
                                                         $youtubeUrl = $media->file;
                                                         $videoId = \Illuminate\Support\Str::after($youtubeUrl, 'v=');
                                                         if (str_contains($videoId, '&')) {
@@ -79,12 +80,45 @@
                                         </div>
                                     @endif
                                     <div class="col-md-6">
+                                        <!-- Event content -->
                                         <div class="event-description p-2 rounded">
                                             <div class="event-meta d-flex align-items-center justify-content-between mb-2">
                                                 <div class="date">{{ $event->event_date->format('M d, Y') }}</div>
                                             </div>
-                                            <h5 class="mb-2">{{ $event->title }}</h5>
-                                            <p>{{ $event->description }}</p>
+                                            <h5 class="mb-2">{{ $event->title }}</h5> <!-- Event title -->
+                                            <p>{{ $event->description }}</p> <!-- Event description -->
+                                            <a href="{{ route('event.post', $event->id) }}" class="d-flex align-items-center">
+                                                {{ __('translations.More details') }} <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
+                                            </a>
+
+                                            <!-- Show the Update Button only to the Event Creator -->
+                                            @if (auth()->id() === $event->user_id)
+                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update') }}</button>
+                                                <!-- Delete Button -->
+                                                <button wire:click="deleteEvent({{ $event->id }})" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this event?');">{{ __('translations.Delete') }}</button>
+                                            @endif
+
+                                            <!-- Attending / Not Attending Buttons -->
+                                            @if ($event->attendees->contains(auth()->user()->id))
+                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-danger mt-3">{{ __('translations.Not attending') }}</button>
+                                            @else
+                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-success mt-3">{{ __('translations.Attending') }}</button>
+                                            @endif
+
+                                            <!-- Button to show attendees modal -->
+                                            <button wire:click="showAttendees({{ $event->id }})" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#attendeesModal">
+                                                {{ __('translations.Show attendees') }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                @else <!-- Right media, left content -->
+                                    <div class="col-md-6">
+                                        <div class="event-description p-2 rounded">
+                                            <div class="event-meta mb-2">
+                                                <small class="text-muted">{{ $event->event_date->format('M d, Y') }}</small>
+                                            </div>
+                                            <h5 class="mb-2">{{ $event->title }}</h5> <!-- Event title -->
+                                            <p>{{ $event->description }}</p> <!-- Event description -->
                                             <a href="{{ route('event.post', $event->id) }}" class="d-flex align-items-center">
                                                 {{ __('translations.More details') }} <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
                                             </a>
@@ -107,36 +141,6 @@
                                             </button>
                                         </div>
                                     </div>
-                                @else <!-- Right media, left content -->
-                                    <div class="col-md-6">
-                                        <div class="event-description p-2 rounded">
-                                            <div class="event-meta mb-2">
-                                                <small class="text-muted">{{ $event->event_date->format('M d, Y') }}</small>
-                                            </div>
-                                            <h5 class="mb-2">{{ $event->title }}</h5>
-                                            <p>{{ $event->description }}</p>
-                                            <a href="{{ route('event.post', $event->id) }}" class="d-flex align-items-center">
-                                                {{ __('translations.More details') }} <i class="material-symbols-outlined fs-6 icon-rtl">arrow_forward_ios</i>
-                                            </a>
-
-                                            <!-- Show the Update Button only to the Event Creator -->
-                                            @if (auth()->id() === $event->user_id)
-                                                <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update') }}</button>
-                                            @endif
-
-                                            <!-- Attending / Not Attending Buttons -->
-                                            @if ($event->attendees->contains(auth()->user()->id))
-                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-danger mt-3">{{ __('translations.Not attending') }}</button>
-                                            @else
-                                                <button wire:click="toggleAttendance({{ $event->id }})" class="btn btn-success mt-3">{{ __('translations.Attending') }}</button>
-                                            @endif
-
-                                            <!-- Button to show attendees modal -->
-                                            <button wire:click="showAttendees({{ $event->id }})" class="btn btn-info mt-3" data-bs-toggle="modal" data-bs-target="#attendeesModal">
-                                              {{ __('translations.Show attendees') }}
-                                            </button>
-                                        </div>
-                                    </div>
                                     @if ($media)
                                         <div class="col-md-6">
                                             <div class="image-block">
@@ -147,6 +151,14 @@
                                                         <source src="{{ asset('storage/' . $media->file) }}" type="video/mp4">
                                                     </video>
                                                 @elseif ($media->file_type == 'youtube')
+                                                    @php
+                                                        // Extract YouTube video ID only for this event's media
+                                                        $youtubeUrl = $media->file;
+                                                        $videoId = \Illuminate\Support\Str::after($youtubeUrl, 'v=');
+                                                        if (str_contains($videoId, '&')) {
+                                                            $videoId = strtok($videoId, '&');
+                                                        }
+                                                    @endphp
                                                     <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen></iframe>
                                                 @endif
                                             </div>

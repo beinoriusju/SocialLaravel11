@@ -75,8 +75,8 @@
         </div>
     </div>
 
-    <div wire:loading class="text-center mt-4 loading-text">
-        <span>{{ __('translations.Loading more') }}</span>
+    <div wire:loading.class="loading" class="text-center mt-4 loading-text">
+        <span>{{ __('translations.No more') }}</span>
     </div>
 </div>
 
@@ -90,13 +90,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Infinite scroll logic
         window.addEventListener('scroll', function () {
             if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 100) {
                 @this.call('loadMoreUsers');
             }
         });
 
-        Livewire.on('noMoreUsers', function () {
+        // Event listener for when no more users are available
+        window.addEventListener('noMoreUsers', function () {
             const loadingText = document.querySelector('.loading-text');
             if (loadingText) {
                 loadingText.textContent = "No more users to load.";
@@ -104,8 +106,9 @@
             }
         });
 
-        Livewire.on('usersLoaded', function (event) {
-            if (!event.hasMorePages) {
+        // Event listener for when users are loaded
+        window.addEventListener('usersLoaded', function (event) {
+            if (!event.detail.hasMorePages) {
                 const loadingText = document.querySelector('.loading-text');
                 if (loadingText) {
                     loadingText.textContent = "No more users to load.";

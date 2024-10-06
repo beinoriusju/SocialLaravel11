@@ -31,13 +31,23 @@ class UsersList extends Component
     public function loadMoreUsers()
     {
         $currentPage = ceil(count($this->users) / $this->usersPerPage) + 1;
+
+        // Fetch the new users
         $newUsers = User::paginate($this->usersPerPage, ['*'], 'page', $currentPage);
 
+        // If no new users are returned, dispatch the "noMoreUsers" event
         if ($newUsers->isEmpty()) {
-            $this->dispatch('noMoreUsers'); // Emit event if no more users
+            $this->dispatch('noMoreUsers');  // Emit event if no more users
         } else {
+            // Append new users to the current users array
             $this->users = array_merge($this->users, $newUsers->items());
-            $this->dispatch('usersLoaded', ['hasMorePages' => $newUsers->hasMorePages()]);
+
+            // Check if there are more pages to load
+            if (!$newUsers->hasMorePages()) {
+                $this->dispatchBrowserEvent('noMoreUsers');
+            } else {
+                $this->dispatch('usersLoaded', ['hasMorePages' => $newUsers->hasMorePages()]);
+            }
         }
     }
 

@@ -25,10 +25,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
-    public function sendPasswordResetNotification($token)
-    {
-        $this->notify(new CustomResetPassword($token));
-    }
+    // public function sendPasswordResetNotification($token)
+    // {
+    //     $this->notify(new CustomResetPassword($token));
+    // }
 
     // Get all of the likes for the user
     public function likes()

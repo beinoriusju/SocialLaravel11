@@ -1,39 +1,63 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
-        @csrf
+@extends('layouts.guest')
+@section('title')
+    {{ __('translations.Reset Password') }}
+@endsection
+@section('content')
 
-        <!-- Password Reset Token -->
-        <input type="hidden" name="token" value="{{ $request->route('token') }}">
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+  <div class="row border rounded-5 p-3 bg-white shadow box-area">
+    <!-- Left Box -->
+    <div class="col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column left-box" style="background: #103cbe;">
+      <div class="featured-image mb-3">
+        <img src="{{asset('images/auth.jpg')}}" class="img-fluid" style="width: 250px;">
+      </div>
+    </div>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+    <!-- Right Box (Reset Password Form) -->
+    <div class="col-md-6 right-box">
+      <div class="row align-items-center">
+        <div class="header-text mb-4">
+          <h2>{{ __('translations.Reset Password') }}</h2>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <form method="POST" action="{{ route('password.store') }}">
+            @csrf
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+            <!-- Password Reset Token -->
+            <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
+            <!-- Email Address -->
+            <div class="input-group mb-3">
+                <input type="email" id="email" name="email" placeholder="{{ __('translations.email') }}" value="{{ old('email', $request->email) }}" autocomplete="username" class="form-control form-control-lg bg-light fs-6" required autofocus>
+            </div>
+            @error('email')
+              <div class="text-danger">{{ $message }}</div>
+            @enderror
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+            <!-- Password -->
+            <div class="input-group mb-3">
+                <input type="password" id="password" name="password" placeholder="{{ __('translations.password') }}" autocomplete="new-password" class="form-control form-control-lg bg-light fs-6" required>
+            </div>
+            @error('password')
+              <div class="text-danger">{{ $message }}</div>
+            @enderror
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+            <!-- Confirm Password -->
+            <div class="input-group mb-3">
+                <input type="password" id="password_confirmation" name="password_confirmation" placeholder="{{ __('translations.confirm password') }}" autocomplete="new-password" class="form-control form-control-lg bg-light fs-6" required>
+            </div>
+            @error('password_confirmation')
+              <div class="text-danger">{{ $message }}</div>
+            @enderror
+
+            <!-- Reset Password Button -->
+            <div class="input-group mb-3">
+                <button type="submit" class="btn btn-lg btn-primary w-100 fs-6">{{ __('translations.Reset Password') }}</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+@endsection

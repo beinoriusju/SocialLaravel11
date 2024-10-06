@@ -13,10 +13,12 @@
                             <div class="col-lg-4 profile-left"></div>
                             <div class="col-lg-4 text-center profile-center">
                                 <div class="header-avatar position-relative d-inline-block">
+                                  @if(auth()->id() === $user->id)
                                     <label for="profile-image" class="change-profile-image bg-primary rounded-pill" style="cursor: pointer;">
                                         <span class="material-symbols-outlined text-white font-size-16">photo_camera</span>
                                     </label>
                                     <input type="file" id="profile-image" class="d-none" accept="image/*" wire:model="newProfileImage">
+                                    @endif
 
                                     @if ($newProfileImage)
                                         <img src="{{ $newProfileImage->temporaryUrl() }}" alt="{{ __('translations.New Profile Image') }}" class="avatar-150 border border-4 border-white rounded-3">
@@ -28,7 +30,6 @@
                                         <span class="error">{{ $message }}</span>
                                     @enderror
                                 </div>
-
                                 <h5 class="d-flex align-items-center justify-content-center gap-1 mb-2">
                                     {{ $user->username }}
                                 </h5>
@@ -616,33 +617,32 @@
                                         <div class="tab-pane fade show active" id="pill-recently-add" role="tabpanel">
                                             <div class="card-body p-0">
                                                 <div class="row">
-                                                    @forelse($friends as $friend)
-                                                        @php
-                                                            $friendUser = $friend->user_id == auth()->id() ? $friend->friend : $friend->user;
-                                                        @endphp
+                                                  @forelse($friends as $friend)
+                                                      @php
+                                                          $friendUser = $friend->user_id == $user->id ? $friend->friend : $friend->user;
+                                                      @endphp
 
-                                                        @if($friendUser)
-                                                            <div class="col-md-6 col-lg-6 mb-3">
-                                                                <div class="iq-friendlist-block">
-                                                                    <div class="d-flex align-items-center justify-content-between">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <a href="{{ route('userprofile', ['user' => $friendUser->id]) }}">
-                                                                                <img src="{{ $friendUser->image ? asset('storage/' . $friendUser->image) : asset('front/images/default.png') }}" alt="{{ __('translations.userimg') }}" class="avatar-60 rounded-circle img-fluid" loading="lazy">
-                                                                            </a>
-                                                                            <div class="friend-info ms-3">
-                                                                                <h5>{{ $friendUser->username }}</h5>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @else
-                                                            <p>{{ __('translations.No valid user found') }}</p>
-                                                        @endif
-
-                                                    @empty
-                                                        <p>{{ __('translations.No friends to display') }}</p>
-                                                    @endforelse
+                                                      @if($friendUser)
+                                                          <div class="col-md-6 col-lg-6 mb-3">
+                                                              <div class="iq-friendlist-block">
+                                                                  <div class="d-flex align-items-center justify-content-between">
+                                                                      <div class="d-flex align-items-center">
+                                                                          <a href="{{ route('userprofile', ['user' => $friendUser->id]) }}">
+                                                                              <img src="{{ $friendUser->image ? asset('storage/' . $friendUser->image) : asset('front/images/default.png') }}" alt="{{ __('translations.userimg') }}" class="avatar-60 rounded-circle img-fluid" loading="lazy">
+                                                                          </a>
+                                                                          <div class="friend-info ms-3">
+                                                                              <h5>{{ $friendUser->username }}</h5>
+                                                                          </div>
+                                                                      </div>
+                                                                  </div>
+                                                              </div>
+                                                          </div>
+                                                      @else
+                                                          <p>{{ __('translations.No valid user found') }}</p>
+                                                      @endif
+                                                  @empty
+                                                      <p>{{ __('translations.No friends to display') }}</p>
+                                                  @endforelse
                                                 </div>
                                             </div>
                                         </div>

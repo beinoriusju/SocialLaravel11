@@ -29,10 +29,3 @@ function showForm(formType) {
         document.getElementById('event-form-container').style.display = 'block';
     }
 }
-
-// Listen for events
-Echo.private(`conversation.${conversationId}`)
-    .listen('MessageSent', (e) => {
-        Livewire.dispatch('refreshMessages');
-        alert("hi");
-    });

@@ -102,7 +102,19 @@ class Events extends Component
             'user_id' => auth()->id(),
         ]);
 
-        // Save media files
+        // Extract YouTube links from title, description, and details
+        $youtubeLinks = $this->extractYouTubeLinks($this->title, $this->description, $this->details);
+        
+        // Save YouTube links
+        foreach ($youtubeLinks as $link) {
+            EventMedia::create([
+                'event_id' => $event->id,
+                'file_type' => 'youtube',
+                'file' => $link,
+            ]);
+        }
+
+        // Save media files (images and videos)
         $this->saveMedia($event);
 
         // Reset form after creating the event
@@ -137,6 +149,7 @@ class Events extends Component
 
         $event = Event::findOrFail($this->eventIdBeingEdited);
 
+        // Update event details
         $event->update([
             'title' => $this->title,
             'description' => $this->description,
@@ -152,7 +165,7 @@ class Events extends Component
             ->delete();
 
         // Extract new YouTube links
-        $youtubeLinks = $this->extractYouTubeLinks($this->title, $this->description);
+        $youtubeLinks = $this->extractYouTubeLinks($this->title, $this->description, $this->details);
         foreach ($youtubeLinks as $link) {
             EventMedia::create([
                 'event_id' => $event->id,
@@ -161,7 +174,7 @@ class Events extends Component
             ]);
         }
 
-        // Save new media
+        // Save new media (images and videos)
         $this->saveMedia($event);
 
         // Reset form after updating the event
@@ -208,9 +221,9 @@ class Events extends Component
         $this->eventIdBeingEdited = null;
     }
 
-    public function extractYouTubeLinks($title, $description)
+    public function extractYouTubeLinks($title, $description, $details = null)
     {
-        $content = $title . ' ' . $description;
+        $content = $title . ' ' . $description . ' ' . $details;
         if (!$content) return [];
 
         $videoPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/i';
@@ -232,76 +245,76 @@ class Events extends Component
         } else {
             // User is not attending, so add them
             EventAttendee::create([
-                            'event_id' => $eventId,
-                            'user_id' => $userId,
-                        ]);
-                    }
+                'event_id' => $eventId,
+                'user_id' => $userId,
+            ]);
+        }
 
-                    // Reload events to reflect attendance change
-                    $this->resetPagination();
-                    $this->loadMoreEvents(true);
-                }
+        // Reload events to reflect attendance change
+        $this->resetPagination();
+        $this->loadMoreEvents(true);
+    }
 
-                public function loadMoreEvents($reset = false)
-                {
-                    if ($reset) {
-                        $this->events = collect();  // Initialize $events as a collection
-                    }
+    public function loadMoreEvents($reset = false)
+    {
+        if ($reset) {
+            $this->events = collect();  // Initialize $events as a collection
+        }
 
-                    $query = Event::with('media', 'attendees');
+        $query = Event::with('media', 'attendees');
 
-                    if ($this->selectedCategory) {
-                        $query->where('category_id', $this->selectedCategory);
-                    }
+        if ($this->selectedCategory) {
+            $query->where('category_id', $this->selectedCategory);
+        }
 
-                    if ($this->selectedSubcategory) {
-                        $query->where('subcategory_id', $this->selectedSubcategory);
-                    }
+        if ($this->selectedSubcategory) {
+            $query->where('subcategory_id', $this->selectedSubcategory);
+        }
 
-                    if ($this->startDate) {
-                        $query->whereDate('event_date', '>=', $this->startDate);
-                    }
+        if ($this->startDate) {
+            $query->whereDate('event_date', '>=', $this->startDate);
+        }
 
-                    if ($this->endDate) {
-                        $query->whereDate('event_date', '<=', $this->endDate);
-                    }
+        if ($this->endDate) {
+            $query->whereDate('event_date', '<=', $this->endDate);
+        }
 
-                    $newEvents = $query->latest()
-                        ->skip(($this->page - 1) * $this->postsPerPage)
-                        ->take($this->postsPerPage)
-                        ->get();
+        $newEvents = $query->latest()
+            ->skip(($this->page - 1) * $this->postsPerPage)
+            ->take($this->postsPerPage)
+            ->get();
 
-                    if ($newEvents->count() < $this->postsPerPage) {
-                        $this->hasMorePages = false;
-                    }
+        if ($newEvents->count() < $this->postsPerPage) {
+            $this->hasMorePages = false;
+        }
 
-                    $this->events = $this->events->concat($newEvents); // Concatenate new events to the existing collection
+        $this->events = $this->events->concat($newEvents); // Concatenate new events to the existing collection
 
-                    $this->page++;
-                }
+        $this->page++;
+    }
 
-                public function showAttendees($eventId)
-                {
-                    // Fetch the attendees for the selected event as a collection
-                    $this->attendees = EventAttendee::where('event_id', $eventId)
-                        ->with('user')
-                        ->get();  // This will return a collection, not an array
+    public function showAttendees($eventId)
+    {
+        // Fetch the attendees for the selected event as a collection
+        $this->attendees = EventAttendee::where('event_id', $eventId)
+            ->with('user')
+            ->get();
 
-                    // Dispatch the event to open the modal
-                    $this->dispatch('show-attendees-modal');
-                }
+        // Dispatch the event to open the modal
+        $this->dispatch('show-attendees-modal');
+    }
 
-                public function resetPagination()
-                {
-                    $this->page = 1;
-                    $this->hasMorePages = true;
-                }
+    public function resetPagination()
+    {
+        $this->page = 1;
+        $this->hasMorePages = true;
+    }
 
-                public function render()
-                {
-                    return view('livewire.events', [
-                        'events' => $this->events,
-                        'hasMorePages' => $this->hasMorePages,
-                    ])->extends('layouts.app');
-                }
-            }
+    public function render()
+    {
+        return view('livewire.events', [
+            'events' => $this->events,
+            'hasMorePages' => $this->hasMorePages,
+        ])->extends('layouts.app');
+    }
+}

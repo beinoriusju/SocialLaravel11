@@ -68,8 +68,8 @@ class CreateEvent extends Component
             'videos.*' => 'nullable|mimes:mp4,avi,mkv|max:51200',
         ]);
 
-        // Extract YouTube links from the title and description
-        $youtubeLinks = $this->extractYouTubeLinks($this->title, $this->description);
+        // Extract YouTube links from the title, description, and details
+        $youtubeLinks = $this->extractYouTubeLinks($this->title, $this->description, $this->details);
 
         DB::beginTransaction();
         try {
@@ -137,25 +137,29 @@ class CreateEvent extends Component
     }
 
     /**
-     * Extract YouTube links from the title and description.
+     * Extract YouTube links from the title, description, and details.
      *
      * @param string|null $title
      * @param string|null $description
+     * @param string|null $details
      * @return array
      */
-    protected function extractYouTubeLinks($title, $description)
+    protected function extractYouTubeLinks($title, $description, $details = null)
     {
-        $content = $title . ' ' . $description;
-        if (!$content) return [];
+        // Combine title, description, and details into one string for processing
+        $content = $title . ' ' . $description . ' ' . $details;
 
+        if (!$content) {
+            return [];
+        }
+
+        // Regular expression pattern to match YouTube video URLs
         $videoPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/i';
-        $playlistPattern = '/(?:https?:\/\/)?(?:youtube\.com\/playlist\?list=)([\w\-]+)/i';
 
-        $matches = [];
         preg_match_all($videoPattern, $content, $videoMatches);
-        preg_match_all($playlistPattern, $content, $playlistMatches);
 
-        return array_merge($videoMatches[0], $playlistMatches[0]);
+        // Return unique YouTube video URLs
+        return array_unique($videoMatches[0]);
     }
 
     public function resetForm()

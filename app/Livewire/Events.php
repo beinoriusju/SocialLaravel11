@@ -104,7 +104,7 @@ class Events extends Component
 
         // Extract YouTube links from title, description, and details
         $youtubeLinks = $this->extractYouTubeLinks($this->title, $this->description, $this->details);
-        
+
         // Save YouTube links
         foreach ($youtubeLinks as $link) {
             EventMedia::create([

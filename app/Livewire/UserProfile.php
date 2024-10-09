@@ -169,6 +169,13 @@ class UserProfile extends Component
         $this->activePhotoTab = $tab;
     }
 
+    public $activeAboutTab = 'about';
+
+    public function setActiveAboutTab($tab)
+    {
+        $this->activeAboutTab = $tab;
+    }
+
     public function saveComment($post_id)
     {
         $this->validate([

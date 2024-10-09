@@ -168,7 +168,7 @@
                                             <!-- Show More Media Button -->
                                             @if ($totalMedia > 5 || count($videos) > 0 || count($youtubeLinks) > 0)
                                                 <p class="cursor-pointer text-primary" data-bs-toggle="modal" data-bs-target="#mediaModal-{{ $post->id }}">
-                                                    +{{ count($images) + count($videos) + count($youtubeLinks) }} {{ __('translations.more media') }}
+                                                  {{ __('translations.more media') }} {{ count($images) + count($videos) + count($youtubeLinks) }} {{ __('translations.total') }}
                                                 </p>
                                             @endif
                                         @endif

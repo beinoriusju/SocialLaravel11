@@ -243,7 +243,7 @@
                                                   <!-- Show More Media Button -->
                                                   @if ($totalMedia > 5 || count($videos) > 0 || count($youtubeLinks) > 0)
                                                       <p class="cursor-pointer text-primary" data-bs-toggle="modal" data-bs-target="#mediaModal-{{ $post->id }}">
-                                                          +{{ count($images) + count($videos) + count($youtubeLinks) }} {{ __('translations.more media') }}
+                                                          {{ __('translations.more media') }} {{ count($images) + count($videos) + count($youtubeLinks) }} {{ __('translations.total') }}
                                                       </p>
                                                   @endif
                                               @endif
@@ -533,12 +533,13 @@
                             <div class="col-md-4">
                                 <div class="card">
                                     <div class="card-body">
+                                        <!-- About Section Tabs -->
                                         <ul class="nav nav-pills basic-info-items list-inline d-block p-0 m-0" role="tablist">
                                             <li>
-                                                <a class="nav-link active" href="#v-pills-basicinfo-tab" data-bs-toggle="pill" role="tab">{{ __('translations.About') }}</a>
+                                                <a class="nav-link {{ $activeAboutTab == 'about' ? 'active' : '' }}" href="#v-pills-basicinfo-tab" wire:click.prevent="setActiveAboutTab('about')" data-bs-toggle="pill" role="tab">{{ __('translations.About') }}</a>
                                             </li>
                                             <li>
-                                                <a class="nav-link" href="#v-pills-details-tab" data-bs-toggle="pill" role="tab">{{ __('translations.Hobbies') }}</a>
+                                                <a class="nav-link {{ $activeAboutTab == 'hobbies' ? 'active' : '' }}" href="#v-pills-details-tab" wire:click.prevent="setActiveAboutTab('hobbies')" data-bs-toggle="pill" role="tab">{{ __('translations.Hobbies') }}</a>
                                             </li>
                                         </ul>
                                     </div>
@@ -549,7 +550,7 @@
                                     <div class="card-body">
                                         <div class="tab-content">
                                             <!-- Personal Info Tab -->
-                                            <div class="tab-pane fade show active" id="v-pills-basicinfo-tab" role="tabpanel">
+                                            <div class="tab-pane fade {{ $activeAboutTab == 'about' ? 'show active' : '' }}" id="v-pills-basicinfo-tab" role="tabpanel">
                                                 <h4>{{ __('translations.Personal Info') }}</h4>
                                                 <hr>
                                                 <form wire:submit.prevent="updateAboutSection">
@@ -578,10 +579,9 @@
                                             </div>
 
                                             <!-- Hobbies and Interests Tab -->
-                                            <div class="tab-pane fade" id="v-pills-details-tab" role="tabpanel">
+                                            <div class="tab-pane fade {{ $activeAboutTab == 'hobbies' ? 'show active' : '' }}" id="v-pills-details-tab" role="tabpanel">
                                                 <h4 class="mt-2">{{ __('translations.Hobbies') }}</h4>
                                                 <hr>
-
                                                 <form wire:submit.prevent="updateAboutSection">
                                                     <div class="row mb-2">
                                                         <div class="col-3">

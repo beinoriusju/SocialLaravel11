@@ -47,24 +47,17 @@
         <div class="col-md-9 p-0">
             <!-- Chat Header -->
             <div class="chat-header d-flex justify-content-between align-items-center">
-                @if ($selectedUser)
+                @if ($selectedUser && $selectedConversation)
                     <div class="d-flex align-items-center">
                         <img src="{{ $selectedUser->image ? asset('storage/' . $selectedUser->image) : asset('front/images/default.png') }}"
                              alt="avatar" class="rounded-circle" style="width: 50px;">
                         <span class="ms-2">{{ $selectedUser->username }}</span>
                     </div>
                     <div>
-                        <a href="#"><i class="bi bi-house-fill me-3"></i></a>
-                        <i class="bi bi-telephone-fill me-3"></i>
-                        <i class="bi bi-camera-video-fill me-3"></i>
-                        <i class="bi bi-trash-fill"></i>
-                    </div>
-                @else
-                    <div>
-                        <a href="#"><i class="bi bi-house-fill me-3"></i></a>
-                        <i class="bi bi-telephone-fill me-3"></i>
-                        <i class="bi bi-camera-video-fill me-3"></i>
-                        <i class="bi bi-trash-fill me-3"></i>
+                        <!-- Only show the delete conversation button if a conversation is selected -->
+                        <button wire:click="deleteConversation({{ $selectedConversation->id }})" class="btn btn-danger btn-sm">
+                            <i class="bi bi-trash-fill"></i> Delete Conversation
+                        </button>
                     </div>
                 @endif
             </div>
@@ -148,6 +141,13 @@
                             @endif
 
                             <small class="text-muted">{{ \Carbon\Carbon::parse($message['created_at'])->diffForHumans() }}</small>
+
+                            <!-- Delete message button (only for the sender) -->
+                            @if ($message['sender_id'] == Auth::id())
+                                <button wire:click="deleteMessage({{ $message['id'] }})" class="btn btn-danger btn-sm mt-2">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            @endif
                         </div>
                     @endforeach
                 @else

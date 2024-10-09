@@ -139,7 +139,6 @@ class Chat extends Component
 
         // Save YouTube links (if any)
         foreach ($youtubeLinks as $link) {
-            // Store YouTube links as part of message files (if required)
             $message->update([
                 'file_path' => $link,
                 'file_type' => 'youtube',
@@ -159,19 +158,19 @@ class Chat extends Component
             }
 
             $message->update([
-                'file_path' => json_encode($filePaths), // Store all file paths as JSON
+                'file_path' => json_encode($filePaths),
                 'file_type' => $fileType,
                 'file_name' => $originalName,
             ]);
 
-            // Dispatch job to delete the file after 6 hours (for testing purposes, it is 1 minute)
+            // Dispatch job to delete the file after 6 hours (for testing purposes, it is 55 minutes)
             DeleteExpiredFiles::dispatch($message)->delay(now()->addMinutes(55));
         }
 
         broadcast(new MessageSent($message))->toOthers();
         $this->dispatch('refreshMessages');
-        $this->newMessage = ''; // Clear the input field
-        $this->attachments = []; // Clear attachments after sending the message
+        $this->newMessage = '';
+        $this->attachments = [];
     }
 
     public function selectUser($userId)
@@ -198,6 +197,38 @@ class Chat extends Component
         $this->query = '';
     }
 
+    public function deleteMessage($messageId)
+    {
+        $message = Message::find($messageId);
+
+        if ($message && $message->sender_id == Auth::id()) {
+            $message->delete();
+            $this->loadMessages();
+            session()->flash('success', 'Message deleted successfully.');
+        } else {
+            session()->flash('error', 'You are not authorized to delete this message.');
+        }
+    }
+
+    public function deleteConversation($conversationId)
+    {
+        $conversation = Conversation::find($conversationId);
+
+        if ($conversation && ($conversation->sender_id == Auth::id() || $conversation->receiver_id == Auth::id())) {
+            foreach ($conversation->messages as $message) {
+                $message->delete();
+            }
+
+            $conversation->delete();
+
+            $this->selectedConversation = null;
+            $this->loadConversations();
+            session()->flash('success', 'Conversation deleted successfully.');
+        } else {
+            session()->flash('error', 'You are not authorized to delete this conversation.');
+        }
+    }
+
     public function refreshMessages()
     {
         $this->loadMessages();
@@ -212,30 +243,20 @@ class Chat extends Component
         }
     }
 
-    /**
-     * Extract YouTube video and playlist links from the message body.
-     *
-     * @param string|null $message
-     * @return array
-     */
     protected function extractYouTubeLinks($message)
     {
         if (!$message) {
             return [];
         }
 
-        // Regular expressions to match YouTube video and playlist URLs
         $videoPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/i';
-        $playlistPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/playlist\?list=)([\w\-]+)/i';
+        $playlistPattern = '/(?:https?:\/\/)?(?:youtube\.com\/playlist\?list=)([\w\-]+)/i';
 
         $matches = [];
         preg_match_all($videoPattern, $message, $videoMatches);
         preg_match_all($playlistPattern, $message, $playlistMatches);
 
-        // Combine video and playlist matches
-        $matches = array_merge($videoMatches[0], $playlistMatches[0]);
-
-        return $matches;
+        return array_merge($videoMatches[0], $playlistMatches[0]);
     }
 
     public function render()

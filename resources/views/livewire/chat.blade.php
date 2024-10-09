@@ -6,7 +6,7 @@
 
             <!-- User Search -->
             <div class="user-search-bar position-relative">
-                <input wire:model.debounce.300ms="query" type="text" class="form-control" placeholder="Search for users...">
+                <input wire:model.live="query" type="text" class="form-control" placeholder="Search for users...">
 
                 @if (strlen($query) >= 2)
                     <ul class="list-group mt-2 position-absolute w-100" style="max-height: 600px; overflow-y: auto; z-index: 10;">
@@ -99,9 +99,8 @@
                 </a>
                 <input type="file" id="fileInput" wire:model.lazy="attachments" class="d-none" multiple>
 
-                <form wire:submit.prevent="sendMessage" class="d-flex w-100">
-                    <textarea wire:model.lazy="newMessage" class="form-control" rows="2" placeholder="Type your message"
-                              onkeydown="if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); }"></textarea>
+                <form wire:submit.prevent="sendMessage" class="d-flex w-100" id="messageForm">
+                    <textarea wire:model.lazy="newMessage" class="form-control" rows="2" placeholder="Type your message" id="messageInput"></textarea>
 
                     <button type="submit" class="btn btn-primary ms-2">
                         <i class="bi bi-send-fill"></i> Send
@@ -146,5 +145,24 @@
                 });
             }
         }
+
+        // Handle sending message on Enter key press
+        const messageInput = document.getElementById('messageInput');
+        const messageForm = document.getElementById('messageForm');
+
+        messageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) { // If Enter is pressed and Shift is not held
+                event.preventDefault(); // Prevent default Enter behavior
+                messageForm.dispatchEvent(new Event('submit')); // Submit the form
+
+                // Clear the textarea after sending the message
+                messageInput.value = ''; // Clear the input field
+            }
+        });
+
+        // Handle form submission to clear the textarea
+        messageForm.addEventListener('submit', () => {
+            messageInput.value = ''; // Clear the input field after the form is submitted
+        });
     });
 </script>

@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithFileUploads;
 use App\Events\MessageSent;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Jobs\DeleteExpiredFiles;
 
 class Chat extends Component
 {
@@ -96,8 +99,8 @@ class Chat extends Component
 
     public function sendMessage()
     {
-        if (trim($this->newMessage) === '') { // Prevent sending empty messages
-            session()->flash('error', 'Message cannot be empty.'); // Show an error message
+        if (trim($this->newMessage) === '' && empty($this->attachments)) {
+            session()->flash('error', 'Message cannot be empty.');
             return;
         }
 
@@ -122,6 +125,9 @@ class Chat extends Component
             }
         }
 
+        // Extract YouTube links from the message (if any)
+        $youtubeLinks = $this->extractYouTubeLinks($this->newMessage);
+
         $messageData = [
             'conversation_id' => $this->selectedConversation->id,
             'sender_id' => Auth::id(),
@@ -131,23 +137,41 @@ class Chat extends Component
 
         $message = Message::create($messageData);
 
+        // Save YouTube links (if any)
+        foreach ($youtubeLinks as $link) {
+            // Store YouTube links as part of message files (if required)
+            $message->update([
+                'file_path' => $link,
+                'file_type' => 'youtube',
+                'file_name' => 'YouTube Link',
+            ]);
+        }
+
+        // Handle file uploads
         if ($this->attachments) {
+            $filePaths = [];
             foreach ($this->attachments as $attachment) {
                 $originalName = $attachment->getClientOriginalName();
-                $filePath = $attachment->storeAs('attachments', $originalName, 'public');
-                $fileType = $attachment->getMimeType();
+                $filePath = $attachment->storeAs('attachments', Str::uuid() . '_' . $originalName, 'public');
+                $filePaths[] = $filePath;
 
-                $message->update([
-                    'file_path' => $filePath,
-                    'file_type' => $fileType,
-                    'file_name' => $originalName,
-                ]);
+                $fileType = $attachment->getMimeType();
             }
+
+            $message->update([
+                'file_path' => json_encode($filePaths), // Store all file paths as JSON
+                'file_type' => $fileType,
+                'file_name' => $originalName,
+            ]);
+
+            // Dispatch job to delete the file after 6 hours (for testing purposes, it is 1 minute)
+            DeleteExpiredFiles::dispatch($message)->delay(now()->addMinutes(55));
         }
 
         broadcast(new MessageSent($message))->toOthers();
         $this->dispatch('refreshMessages');
-        $this->newMessage = ''; // Clear the input field after sending a message
+        $this->newMessage = ''; // Clear the input field
+        $this->attachments = []; // Clear attachments after sending the message
     }
 
     public function selectUser($userId)
@@ -186,6 +210,32 @@ class Chat extends Component
         } else {
             $this->users = [];
         }
+    }
+
+    /**
+     * Extract YouTube video and playlist links from the message body.
+     *
+     * @param string|null $message
+     * @return array
+     */
+    protected function extractYouTubeLinks($message)
+    {
+        if (!$message) {
+            return [];
+        }
+
+        // Regular expressions to match YouTube video and playlist URLs
+        $videoPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w\-]+)/i';
+        $playlistPattern = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/playlist\?list=)([\w\-]+)/i';
+
+        $matches = [];
+        preg_match_all($videoPattern, $message, $videoMatches);
+        preg_match_all($playlistPattern, $message, $playlistMatches);
+
+        // Combine video and playlist matches
+        $matches = array_merge($videoMatches[0], $playlistMatches[0]);
+
+        return $matches;
     }
 
     public function render()

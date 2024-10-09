@@ -3,11 +3,9 @@
         <!-- Sidebar (Conversation List and User Search) -->
         <div class="col-md-3 sidebar">
             <h5>Chats</h5>
-
             <!-- User Search -->
             <div class="user-search-bar position-relative">
                 <input wire:model.live="query" type="text" class="form-control" placeholder="Search for users...">
-
                 @if (strlen($query) >= 2)
                     <ul class="list-group mt-2 position-absolute w-100" style="max-height: 600px; overflow-y: auto; z-index: 10;">
                         @forelse ($users as $user)
@@ -27,7 +25,6 @@
             </div>
 
             <h6>Recent Chats</h6>
-
             <!-- Conversation List -->
             <ul class="list-group" style="max-height: 450px; overflow-y: scroll;">
                 @foreach ($conversations as $conversation)
@@ -80,10 +77,76 @@
                             @php
                                 // Fetch the user associated with the message
                                 $messageUser = $message['sender_id'] === Auth::id() ? Auth::user() : $message['receiver'];
+
+                                // Decode file paths (stored as JSON)
+                                $files = json_decode($message['file_path'], true);
+                                $images = [];
+                                $videos = [];
+                                $youtubeLinks = [];
+
+                                // Separate files by type
+                                if ($message['file_type'] === 'youtube') {
+                                    // Store the YouTube link in the youtubeLinks array
+                                    $youtubeLinks[] = $message['file_path'];
+                                } else if ($files) {
+                                    foreach ($files as $file) {
+                                        if (Str::contains($message['file_type'], 'image')) {
+                                            $images[] = $file;
+                                        } elseif (Str::contains($message['file_type'], 'video')) {
+                                            $videos[] = $file;
+                                        }
+                                    }
+                                }
                             @endphp
-                            <img src="{{ $messageUser && $messageUser['image'] ? asset('storage/' . $messageUser['image']) : asset('front/images/default.png') }}"
-                                 alt="avatar" class="rounded-circle me-2" style="width: 40px;">
+
+                            <img src="{{ $messageUser && $messageUser['image'] ? asset('storage/' . $messageUser['image']) : asset('front/images/default.png') }}" alt="avatar" class="rounded-circle me-2" style="width: 40px;">
                             <p>{{ $message['body'] }}</p>
+
+                            <!-- Display Images -->
+                            @if (count($images) > 0)
+                                <div class="row">
+                                    @foreach ($images as $image)
+                                        <div class="col-md-4 mb-3">
+                                            <a href="{{ asset('storage/' . $image) }}" data-fslightbox="gallery-{{ $message['id'] }}" class="rounded">
+                                                <img src="{{ asset('storage/' . $image) }}" class="img-fluid rounded w-100" alt="Image" style="max-height: 300px;">
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <!-- Display Videos -->
+                            @if (count($videos) > 0)
+                                <div class="row mt-3">
+                                    @foreach ($videos as $video)
+                                        <div class="col-md-12 mb-3">
+                                            <video controls class="w-100" style="max-height: 450px;">
+                                                <source src="{{ asset('storage/' . $video) }}" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <!-- Display YouTube Links -->
+                            @if (count($youtubeLinks) > 0)
+                                <div class="row mt-3">
+                                    @foreach ($youtubeLinks as $youtubeLink)
+                                        @php
+                                            // Extract video ID from the link
+                                            parse_str(parse_url($youtubeLink, PHP_URL_QUERY), $params);
+                                            $videoId = $params['v'] ?? null;
+                                        @endphp
+                                        @if ($videoId)
+                                            <div class="col-md-12 mb-3">
+                                                <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen></iframe>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            @endif
+
                             <small class="text-muted">{{ \Carbon\Carbon::parse($message['created_at'])->diffForHumans() }}</small>
                         </div>
                     @endforeach
@@ -101,7 +164,6 @@
 
                 <form wire:submit.prevent="sendMessage" class="d-flex w-100" id="messageForm">
                     <textarea wire:model.lazy="newMessage" class="form-control" rows="2" placeholder="Type your message" id="messageInput"></textarea>
-
                     <button type="submit" class="btn btn-primary ms-2">
                         <i class="bi bi-send-fill"></i> Send
                     </button>
@@ -113,56 +175,46 @@
 
 <script>
     document.addEventListener('livewire:init', () => {
-        const conversationId = @json($selectedConversation ? $selectedConversation->id : null); // Ensure conversationId is available
+        const conversationId = @json($selectedConversation ? $selectedConversation->id : null);
 
         if (conversationId) {
-            // Subscribe to the private channel using Laravel Echo
             Echo.private(`conversation.${conversationId}`)
                 .listen('MessageSent', (event) => {
-                    // Dispatch the refreshMessages event in Livewire to update the chat body
                     Livewire.dispatch('refreshMessages');
                 });
         }
 
-        // Listen for the refreshMessages event from Livewire and scroll to top when new messages are loaded
         Livewire.on('refreshMessages', () => {
-            // Add a short delay to ensure messages are rendered before scrolling
             setTimeout(() => {
-                scrollToTop(); // Scroll to top after messages are refreshed
-            }, 100); // 100ms delay for smoother scrolling
+                scrollToTop();
+            }, 100);
         });
 
-        // Automatically scroll to the top when the page loads
         scrollToTop();
 
-        // Function to scroll to the top of the chat body
         function scrollToTop() {
             const chatBody = document.getElementById('chat-body');
             if (chatBody) {
                 chatBody.scrollTo({
-                    top: 0, // Scroll to the absolute top
-                    behavior: 'smooth' // Smooth scrolling for better user experience
+                    top: 0,
+                    behavior: 'smooth'
                 });
             }
         }
 
-        // Handle sending message on Enter key press
         const messageInput = document.getElementById('messageInput');
         const messageForm = document.getElementById('messageForm');
 
         messageInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) { // If Enter is pressed and Shift is not held
-                event.preventDefault(); // Prevent default Enter behavior
-                messageForm.dispatchEvent(new Event('submit')); // Submit the form
-
-                // Clear the textarea after sending the message
-                messageInput.value = ''; // Clear the input field
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                messageForm.dispatchEvent(new Event('submit'));
+                messageInput.value = '';
             }
         });
 
-        // Handle form submission to clear the textarea
         messageForm.addEventListener('submit', () => {
-            messageInput.value = ''; // Clear the input field after the form is submitted
+            messageInput.value = '';
         });
     });
 </script>

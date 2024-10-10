@@ -9,7 +9,6 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
-use Illuminate\Support\Facades\Log;
 
 class MessageSent implements ShouldBroadcastNow
 {
@@ -24,6 +23,20 @@ class MessageSent implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new PrivateChannel('conversation.' . $this->message->conversation_id);
+        // Broadcast to both the conversation and the receiver's user channel
+        return [
+            new PrivateChannel('conversation.' . $this->message->conversation_id),
+            new PrivateChannel('user.' . $this->message->receiver_id),
+        ];
+    }
+
+    public function broadcastWith()
+    {
+        return [
+            'message' => $this->message->body,
+            'sender' => $this->message->sender->username,
+            'created_at' => $this->message->created_at->diffForHumans(),
+            'receiver_id' => $this->message->receiver_id,
+        ];
     }
 }

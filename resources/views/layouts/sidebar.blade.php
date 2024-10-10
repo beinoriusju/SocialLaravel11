@@ -41,7 +41,8 @@
                 @endif
                 <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="{{ route('chat') }}">
-                        <i class="icon material-symbols-outlined">message</i>
+                        <!-- Unread Messages Badge with icon -->
+                        <livewire:unread-messages-badge />
                         <span class="item-name">{{ __('translations.Messages') }}</span>
                     </a>
                 </li>
@@ -116,4 +117,14 @@
             </ul>
         </div>
     </div>
+    <script>
+        document.addEventListener('livewire:init', () => {
+            const userId = @json(Auth::id());
+
+            Echo.private(`user.${userId}`)
+                .listen('MessageSent', (event) => {
+                    Livewire.dispatch('refreshUnreadMessages');
+                });
+        });
+    </script>
 </aside>

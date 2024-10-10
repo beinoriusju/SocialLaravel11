@@ -79,12 +79,6 @@
   </nav>
 </div>
 
-
-
-
-
-
-
     <script>
         document.addEventListener('livewire:init', () => {
             const userId = @json(Auth::id());

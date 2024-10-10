@@ -30,7 +30,8 @@ class Chat extends Component
 
     protected $listeners = [
         'refreshMessages',
-        'loadMoreMessages'
+        'loadMoreMessages',
+        'refreshUnreadMessages' // Listener to refresh unread messages
     ];
 
     public function mount()
@@ -45,6 +46,13 @@ class Chat extends Component
             ->orWhere('receiver_id', Auth::id())
             ->with('sender', 'receiver', 'messages')
             ->get()
+            ->map(function ($conversation) {
+                $conversation->hasUnreadMessages = Message::where('conversation_id', $conversation->id)
+                    ->where('receiver_id', Auth::id())
+                    ->whereNull('read_at')
+                    ->exists();
+                return $conversation;
+            })
             ->sortByDesc(function ($conversation) {
                 return optional($conversation->messages->last())->created_at ?? $conversation->created_at;
             });
@@ -82,18 +90,18 @@ class Chat extends Component
         }
     }
 
-    public function loadMoreMessages()
-    {
-        $this->messageLimit += 10;
-        $this->loadMessages();
-    }
-
     public function conversationSelected($conversationId)
     {
         $this->selectedConversation = Conversation::with('messages', 'sender', 'receiver')
             ->find($conversationId);
 
         $this->setSelectedUser();
+        // Only mark messages as read for the selected conversation
+        Message::where('conversation_id', $this->selectedConversation->id)
+            ->where('receiver_id', Auth::id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
         $this->loadMessages();
     }
 
@@ -169,6 +177,7 @@ class Chat extends Component
 
         broadcast(new MessageSent($message))->toOthers();
         $this->dispatch('refreshMessages');
+        $this->dispatch('refreshUnreadMessages'); // Emit this to update unread count in sidebar
         $this->newMessage = '';
         $this->attachments = [];
     }

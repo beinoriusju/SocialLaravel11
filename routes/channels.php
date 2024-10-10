@@ -27,3 +27,7 @@ Broadcast::channel('conversation-selected.{conversationId}', function ($user, $c
                   ->orWhere('receiver_id', $user->id);
         })->exists();
 });
+
+Broadcast::channel('notifications.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId; // Ensure the user is authorized to listen to their notifications
+});

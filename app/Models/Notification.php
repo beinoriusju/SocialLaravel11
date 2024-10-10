@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Broadcasting\PrivateChannel;
 
-class Notification extends Model
+class Notification extends Model implements ShouldBroadcast
 {
     use HasFactory;
 
@@ -32,5 +34,30 @@ class Notification extends Model
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'receiver_id');
+    }
+
+    /**
+     * Broadcast the notification on the appropriate channel.
+     *
+     * @return \Illuminate\Broadcasting\Channel
+     */
+    public function broadcastOn()
+    {
+        return new PrivateChannel('notifications.' . $this->receiver_id);
+    }
+
+    /**
+     * Customize the data that will be sent with the broadcast.
+     *
+     * @return array
+     */
+    public function broadcastWith()
+    {
+        return [
+            'id' => $this->id,
+            'message' => $this->message,
+            'sender_id' => $this->sender_id,
+            'created_at' => $this->created_at->diffForHumans(),
+        ];
     }
 }

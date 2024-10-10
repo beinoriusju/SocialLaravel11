@@ -14,6 +14,9 @@
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ asset('front/favicon.ico') }}">
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/7.0.3/pusher.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/laravel-echo/1.11.1/echo.iife.min.js"></script> -->
+    @vite(['resources/js/app.js', 'resources/css/app.css'])
 
     <!-- CSS Libraries -->
     <link rel="stylesheet" href="{{ asset('front/css/libs.min.css') }}">
@@ -61,7 +64,7 @@
     <script src="{{ asset('front/js/enchanter.js') }}"></script>
     <script src="{{ asset('front/js/sweetalert2.min.js') }}" async></script>
     <script src="{{ asset('front/js/sweet-alert.js') }}" defer></script>
-    <script src="{{ asset('front/js/app.js') }}"></script>
+    <script src="{{ asset('front/js/apps.js') }}"></script>
     <script src="{{ asset('front/js/flatpickr.min.js') }}"></script>
     <script src="{{ asset('front/js/fslightbox.js') }}" defer></script>
     <script src="{{ asset('front/js/datepicker.min.js') }}"></script>

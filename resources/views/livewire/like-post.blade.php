@@ -6,7 +6,7 @@
                     <!-- Show the current reaction image or default to 'thumb_up' image -->
                     <img src="{{ asset($currentReactionImage) }}" class="img-fluid reaction-image" alt="{{ $currentReaction }}" loading="lazy" style="height: 20px; width: 20px;">
                 </span>
-                <div class="dropdown-menu py-2 shadow">
+                <div class="dropdown-menu py-2 shadow d-flex">
                     <!-- Reaction options with images -->
                     <a class="ms-2 me-2" href="#" wire:click.prevent="react('like')" data-bs-toggle="tooltip" data-bs-placement="top" title="Like">
                         <img src="{{ asset('front/images/like.png') }}" class="img-fluid" alt="like" loading="lazy">

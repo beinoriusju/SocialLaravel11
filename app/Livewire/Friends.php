@@ -8,6 +8,7 @@ use App\Models\Friend;
 use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
+use App\Events\NotificationSent; // Import the event class
 
 class Friends extends Component
 {
@@ -66,13 +67,16 @@ class Friends extends Component
                 $friendship->delete(); // Unfriend logic: delete the friendship
 
                 // Send a notification to the unfriended user
-                Notification::create([
+                $notification = Notification::create([
                     'type' => 'unfriend',
                     'sender_id' => auth()->id(), // The logged-in user who unfriended
                     'receiver_id' => $userId, // Notify the unfriended user
                     'message' => 'has unfriended you.',
                     'url' => '#',
                 ]);
+
+                // Broadcast the notification
+                broadcast(new NotificationSent($notification))->toOthers();
 
                 DB::commit();
                 session()->flash('message', 'You have unfriended this user.');

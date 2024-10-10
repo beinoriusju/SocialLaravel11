@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use App\Models\Friend;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
+use App\Events\NotificationSent; // Import the event class
 
 class FriendsRequests extends Component
 {
@@ -36,10 +37,10 @@ class FriendsRequests extends Component
             ->paginate($this->requestsPerPage, ['*'], 'page', $currentPage);
 
         if ($newRequests->isEmpty()) {
-            $this->dispatchBrowserEvent('noMoreRequests');
+            $this->dispatch('noMoreRequests');
         } else {
             $this->friendRequests = array_merge($this->friendRequests, $newRequests->items());
-            $this->dispatchBrowserEvent('requestsLoaded', ['hasMorePages' => $newRequests->hasMorePages()]);
+            $this->dispatch('requestsLoaded', ['hasMorePages' => $newRequests->hasMorePages()]);
         }
     }
 
@@ -56,13 +57,16 @@ class FriendsRequests extends Component
                 $friendRequest->update(['status' => 'accepted']);
 
                 // Notify the user that their request was accepted
-                Notification::create([
+                $notification = Notification::create([
                     'type' => 'friend_accepted',
                     'sender_id' => auth()->id(),
                     'receiver_id' => $userId,
                     'message' => 'accepted your friend request.',
                     'url' => '#',
                 ]);
+
+                // Broadcast the notification
+                broadcast(new NotificationSent($notification))->toOthers();
 
                 DB::commit();
                 $this->loadRequests(); // Refresh the requests list after accepting
@@ -86,13 +90,16 @@ class FriendsRequests extends Component
                 $friendRequest->delete();
 
                 // Notify the user that their request was rejected
-                Notification::create([
+                $notification = Notification::create([
                     'type' => 'friend_rejected',
                     'sender_id' => auth()->id(),
                     'receiver_id' => $userId,
                     'message' => 'rejected your friend request.',
                     'url' => '#',
                 ]);
+
+                // Broadcast the notification
+                broadcast(new NotificationSent($notification))->toOthers();
 
                 DB::commit();
                 $this->loadRequests(); // Refresh the requests list after rejecting

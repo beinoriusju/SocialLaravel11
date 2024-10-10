@@ -13,6 +13,7 @@ use App\Livewire\UsersList;
 use App\Livewire\Friends;
 use App\Livewire\FriendsRequests;
 use App\Livewire\UserProfile;
+use App\Livewire\Notifications;
 use App\Livewire\Chat;
 use App\Http\Controllers\Backend\UserDataTableController;
 
@@ -41,6 +42,7 @@ Route::middleware(['auth', 'verified', SetLanguage::class])->group(function () {
     Route::get('/events', Events::class)->name('events');
     Route::get('/event/{event}', SingleEvent::class)->name('event.post');
     Route::get('/newsfeed', Newsfeed::class)->name('newsfeed');
+    Route::get('/notifications', Notifications::class)->name('notifications');
     Route::get('/users', UsersList::class)->name('users');
     Route::get('/friends', Friends::class)->name('friends');
     Route::get('/friendsrequests', FriendsRequests::class)->name('friendsrequests');

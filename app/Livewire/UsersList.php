@@ -8,8 +8,8 @@ use App\Models\User;
 use App\Models\Friend;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Events\NotificationSent; // Import the event class
 
 class UsersList extends Component
 {
@@ -44,7 +44,7 @@ class UsersList extends Component
 
             // Check if there are more pages to load
             if (!$newUsers->hasMorePages()) {
-                $this->dispatchBrowserEvent('noMoreUsers');
+                $this->dispatch('noMoreUsers');
             } else {
                 $this->dispatch('usersLoaded', ['hasMorePages' => $newUsers->hasMorePages()]);
             }
@@ -67,9 +67,7 @@ class UsersList extends Component
                 $req->status = 'accepted';
                 $req->save();
 
-                Log::info('Friend request accepted, creating notification');
-
-                Notification::create([
+                $notification = Notification::create([
                     'type' => 'friend_accepted',
                     'sender_id' => auth()->id(),
                     'receiver_id' => $user->id,
@@ -77,17 +75,20 @@ class UsersList extends Component
                     'url' => '#',
                 ]);
 
+                // Broadcast the notification
+                broadcast(new NotificationSent($notification))->toOthers();
+
                 DB::commit();
                 $this->dispatch('alert', [
                     'type' => 'success', 'message' => 'Friend request accepted'
                 ]);
-            } else {
-                Log::error('Friend request not found or is not pending');
+
+                // Reload the page after accepting the friend request
+                $this->dispatch('reload');
             }
 
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Transaction failed: ' . $th->getMessage());
             throw $th;
         }
     }
@@ -115,15 +116,13 @@ class UsersList extends Component
 
         DB::beginTransaction();
         try {
-            Log::info('Sending friend request');
-
             Friend::create([
                 'user_id' => auth()->id(),
                 'friend_id' => $user->id,
                 'status' => 'pending',
             ]);
 
-            Notification::create([
+            $notification = Notification::create([
                 'type' => 'friend_request',
                 'sender_id' => auth()->id(),
                 'receiver_id' => $user->id,
@@ -131,13 +130,18 @@ class UsersList extends Component
                 'url' => '#',
             ]);
 
+            // Broadcast the notification
+            broadcast(new NotificationSent($notification))->toOthers();
+
             DB::commit();
             $this->dispatch('alert', [
                 'type' => 'success', 'message' => 'Friend request sent to ' . $user->username
             ]);
+
+            // Reload the page after sending the friend request
+            $this->dispatch('reload');
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Transaction failed: ' . $th->getMessage());
             throw $th;
         }
     }
@@ -160,10 +164,11 @@ class UsersList extends Component
                 $status = $friendship->status;
                 $friendship->delete();
 
-                Log::info('Friend request/friendship removed, creating notification');
+                // Initialize the $notification variable to null
+                $notification = null;
 
                 if ($status === 'pending') {
-                    Notification::create([
+                    $notification = Notification::create([
                         'type' => 'friend_request_canceled',
                         'sender_id' => auth()->id(),
                         'receiver_id' => $user->id,
@@ -171,7 +176,7 @@ class UsersList extends Component
                         'url' => '#',
                     ]);
                 } elseif ($status === 'accepted') {
-                    Notification::create([
+                    $notification = Notification::create([
                         'type' => 'unfriend',
                         'sender_id' => auth()->id(),
                         'receiver_id' => $user->id,
@@ -180,35 +185,36 @@ class UsersList extends Component
                     ]);
                 }
 
+                // Check if a notification was created and broadcast it
+                if ($notification) {
+                    broadcast(new NotificationSent($notification))->toOthers();
+                }
+
                 DB::commit();
                 $this->dispatch('alert', [
                     'type' => 'success', 'message' => 'Friend request or friendship removed with ' . $user->username
                 ]);
-            } else {
-                Log::error('No existing friendship or request found');
+
+                // Reload the page after removing a friend
+                $this->dispatch('reload');
             }
 
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Transaction failed: ' . $th->getMessage());
             throw $th;
         }
     }
 
     public function deleteUser($id)
     {
-        Log::info('Delete user function called with ID: ' . $id);
         $this->confirmDeleteUser($id);
     }
 
     public function confirmDeleteUser($id)
     {
-        Log::info('Trying to delete user with ID: ' . $id);
-
         $user = User::find($id);
 
         if (!$user) {
-            Log::warning('User not found for ID: ' . $id);
             $this->dispatch('alert', [
                 'type' => 'error', 'message' => 'User not found'
             ]);
@@ -217,36 +223,25 @@ class UsersList extends Component
 
         DB::beginTransaction();
         try {
-            Log::info('Deleting files for user: ' . $user->id);
-
             // Delete associated files
             $this->deleteUserFiles($user);
-
-            Log::info('Deleting user with ID: ' . $user->id);
 
             // Delete the user
             $user->delete();
 
             DB::commit();
 
-            Log::info('User deleted successfully with ID: ' . $user->id);
-
             $this->dispatch('alert', [
                 'type' => 'success', 'message' => 'User deleted successfully'
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Transaction failed: ' . $th->getMessage());
-
             $this->dispatch('alert', [
                 'type' => 'error', 'message' => 'Failed to delete user'
             ]);
-
             throw $th;
         }
     }
-
-
 
     public function deleteUserFiles($user)
     {
@@ -284,7 +279,6 @@ class UsersList extends Component
             }
         }
     }
-
 
     public function render()
     {

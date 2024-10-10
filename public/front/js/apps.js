@@ -11,7 +11,7 @@ Index Of Script
 ------------------------------------------------
 :: LoaderInit
 :: Tooltip
-:: range Button 
+:: range Button
 :: right-sidebar
 :: Sticky-Nav
 :: Sidebar Toggle
@@ -64,7 +64,7 @@ Index Of Script
     jQuery('[data-bs-toggle="tooltip"]').tooltip();
 
     /*---------------------------------------------------------------------
-    range Button 
+    range Button
     -----------------------------------------------------------------------*/
     function wcqib_refresh_quantity_increments() {
       jQuery(
@@ -1047,7 +1047,7 @@ Index Of Script
     }
 
     /*---------------------------------------------------------------------
-    Editable Table 
+    Editable Table
     -----------------------------------------------------------------------*/
     const $tableID = $("#table"),
       $BTN = $("#export-btn"),
@@ -1381,7 +1381,7 @@ Index Of Script
       }
     });
   });
-    
+
     /*------------DOMContentLoaded--------------*/
         document.addEventListener('DOMContentLoaded', (event) => {
             resizePlugins()
@@ -1390,13 +1390,13 @@ Index Of Script
         window.addEventListener('resize', function (event) {
             resizePlugins()
         });
-    
+
     jQuery(document).on('click', '.modal-backdrop.show', function () {
         if (jQuery('.search-modal.show').length) {
             bootstrap.Modal.getInstance('#searchmodal').hide()
         }
     })
-  
+
   function chatPopupModal() {
     let clickableElements = document.querySelectorAll('[data-target="chat-popup-modal"]');
 

@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\Like;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationSent; // Import the event class
 
 class LikePost extends Component
 {
@@ -70,14 +71,17 @@ class LikePost extends Component
 
         // Notify the post owner if it's not the current user reacting to their own post
         if ($this->post->user_id != Auth::id()) {
-            Notification::create([
+            $notification = Notification::create([
                 'type' => 'like',
                 'receiver_id' => $this->post->user_id, // Post owner's user ID
                 'sender_id' => Auth::id(), // Current user sending the notification
-                'message' =>"reacted to your post with a " . $reactionType . ".",
+                'message' => "reacted to your post with a " . $reactionType . ".",
                 'url' => ' ',
                 'read_at' => null, // Unread by default
             ]);
+
+            // Broadcast the notification
+            broadcast(new NotificationSent($notification))->toOthers();
         }
     }
 
@@ -88,14 +92,17 @@ class LikePost extends Component
 
         // Notify the post owner about reaction edit
         if ($this->post->user_id != Auth::id()) {
-            Notification::create([
+            $notification = Notification::create([
                 'type' => 'edit_reaction',
                 'receiver_id' => $this->post->user_id, // Post owner's user ID
                 'sender_id' => Auth::id(), // Current user sending the notification
-                'message' =>"changed their reaction to " . $reactionType . " on your post.",
+                'message' => "changed their reaction to " . $reactionType . " on your post.",
                 'url' => ' ',
                 'read_at' => null, // Unread by default
             ]);
+
+            // Broadcast the notification
+            broadcast(new NotificationSent($notification))->toOthers();
         }
     }
 
@@ -111,14 +118,17 @@ class LikePost extends Component
 
         // Notify the post owner about reaction removal
         if ($this->post->user_id != Auth::id()) {
-            Notification::create([
+            $notification = Notification::create([
                 'type' => 'remove_reaction',
                 'receiver_id' => $this->post->user_id, // Post owner's user ID
                 'sender_id' => Auth::id(), // Current user sending the notification
-                'message' =>" removed their reaction from your post.",
+                'message' => "removed their reaction from your post.",
                 'url' => ' ',
                 'read_at' => null, // Unread by default
             ]);
+
+            // Broadcast the notification
+            broadcast(new NotificationSent($notification))->toOthers();
         }
     }
 

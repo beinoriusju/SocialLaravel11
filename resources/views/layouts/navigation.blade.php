@@ -78,3 +78,21 @@
     </div>
   </nav>
 </div>
+
+
+
+
+
+
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            const userId = @json(Auth::id());
+
+            Echo.private(`notifications.${userId}`)
+                .listen('NotificationSent', (event) => {
+                    Livewire.dispatch('notificationsUpdated'); // Emit event to refresh notifications
+                });
+        });
+    </script>
+</div>

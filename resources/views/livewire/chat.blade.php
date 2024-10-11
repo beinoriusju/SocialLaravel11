@@ -55,7 +55,6 @@
                     @endif
                 </div>
                 <div>
-                    <!-- Only show the delete conversation button if a conversation is selected -->
                     @if ($selectedConversation)
                         <button wire:click="deleteConversation({{ $selectedConversation->id }})" class="btn btn-danger btn-sm">
                             <i class="bi bi-trash-fill"></i> Delete Conversation
@@ -77,18 +76,21 @@
                                 $files = json_decode($message['file_path'], true);
                                 $images = [];
                                 $videos = [];
+                                $otherFiles = [];
                                 $youtubeLinks = [];
 
                                 // Separate files by type
                                 if ($message['file_type'] === 'youtube') {
-                                    // Store the YouTube link in the youtubeLinks array
                                     $youtubeLinks[] = $message['file_path'];
-                                } else if ($files) {
+                                } elseif ($files) {
                                     foreach ($files as $file) {
-                                        if (Str::contains($message['file_type'], 'image')) {
+                                        $fileType = mime_content_type(storage_path('app/public/' . $file));
+                                        if (Str::contains($fileType, 'image')) {
                                             $images[] = $file;
-                                        } elseif (Str::contains($message['file_type'], 'video')) {
+                                        } elseif (Str::contains($fileType, 'video')) {
                                             $videos[] = $file;
+                                        } else {
+                                            $otherFiles[] = $file; // Handle all other file types
                                         }
                                     }
                                 }
@@ -102,9 +104,11 @@
                                 <div class="row">
                                     @foreach ($images as $image)
                                         <div class="col-md-4 mb-3">
-                                            <a href="{{ asset('storage/' . $image) }}" data-fslightbox="gallery-{{ $message['id'] }}" class="rounded">
-                                                <img src="{{ asset('storage/' . $image) }}" class="img-fluid rounded w-100" alt="Image" style="max-height: 300px;">
-                                            </a>
+                                            <div class="border rounded p-2">
+                                                <a href="{{ asset('storage/' . $image) }}" data-fslightbox="gallery-{{ $message['id'] }}" class="rounded">
+                                                    <img src="{{ asset('storage/' . $image) }}" class="img-fluid rounded w-100" alt="Image" style="max-height: 300px;">
+                                                </a>
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -129,7 +133,6 @@
                                 <div class="row mt-3">
                                     @foreach ($youtubeLinks as $youtubeLink)
                                         @php
-                                            // Extract video ID from the link
                                             parse_str(parse_url($youtubeLink, PHP_URL_QUERY), $params);
                                             $videoId = $params['v'] ?? null;
                                         @endphp
@@ -138,6 +141,17 @@
                                                 <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen></iframe>
                                             </div>
                                         @endif
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <!-- Display Download Links for other file types -->
+                            @if (count($otherFiles) > 0)
+                                <div class="row mt-3">
+                                    @foreach ($otherFiles as $otherFile)
+                                        <div class="col-md-12 mb-3">
+                                            <a href="{{ asset('storage/' . $otherFile) }}" class="btn btn-link" download>Download File</a>
+                                        </div>
                                     @endforeach
                                 </div>
                             @endif
@@ -191,7 +205,7 @@
                 });
         }
 
-        // Disable send button on file selection and check if message is trimmed
+        // Disable send button on file selection
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 sendMessageButton.disabled = true;
@@ -201,11 +215,7 @@
         // Trim message and enable button only if trimmed message is not empty
         function checkMessage() {
             const trimmedMessage = messageInput.value.trim();
-            if (trimmedMessage !== '' || fileInput.files.length > 0) {
-                sendMessageButton.disabled = false;
-            } else {
-                sendMessageButton.disabled = true;
-            }
+            sendMessageButton.disabled = trimmedMessage === '' && fileInput.files.length === 0;
         }
 
         // Handle message typing (trim the message)

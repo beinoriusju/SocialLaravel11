@@ -122,8 +122,16 @@ class Chat extends Component
 
     public function sendMessage()
     {
+        // Validate that at least a message or an attachment is provided
         if (trim($this->newMessage) === '' && empty($this->attachments)) {
             return;
+        }
+
+        // Validate attachments if they exist
+        if ($this->attachments) {
+            $this->validate([
+                'attachments.*' => 'file|max:51200000', // 50 MB (50 * 1024 KB)
+            ]);
         }
 
         // Ensure the selected conversation exists or create a new one

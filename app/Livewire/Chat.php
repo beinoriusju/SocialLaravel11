@@ -119,7 +119,7 @@ class Chat extends Component
         // Handle file uploads and YouTube links
         if ($this->attachments || !empty($youtubeLinks)) {
             $this->validate([
-                'attachments.*' => 'file|max:51200', // Max 50 MB per file
+                'attachments.*' => 'file|max:51200000', // Max 50 MB per file
             ]);
 
             $filePaths = [];

@@ -9,9 +9,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithFileUploads;
 use App\Events\MessageSent;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use App\Jobs\DeleteExpiredFiles;
+use Illuminate\Support\Str;
 
 class Chat extends Component
 {
@@ -27,11 +26,12 @@ class Chat extends Component
     public $query = '';
     public $users = [];
     public $messageLimit = 10;
+    public $isUploading = false;
 
     protected $listeners = [
         'refreshMessages',
         'loadMoreMessages',
-        'refreshUnreadMessages' // Listener to refresh unread messages
+        'refreshUnreadMessages'
     ];
 
     public function mount()
@@ -90,25 +90,40 @@ class Chat extends Component
         }
     }
 
+    public function loadMoreMessages()
+    {
+        $this->messageLimit += 10;
+        $this->loadMessages();
+    }
+
     public function conversationSelected($conversationId)
     {
-        $this->selectedConversation = Conversation::with('messages', 'sender', 'receiver')
-            ->find($conversationId);
-
+        $this->selectedConversation = Conversation::with('messages', 'sender', 'receiver')->find($conversationId);
         $this->setSelectedUser();
-        // Only mark messages as read for the selected conversation
+
         Message::where('conversation_id', $this->selectedConversation->id)
             ->where('receiver_id', Auth::id())
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
         $this->loadMessages();
+
+        $this->conversations = $this->conversations->filter(function ($conversation) use ($conversationId) {
+            return $conversation->id !== $conversationId;
+        })->prepend($this->selectedConversation);
+
+        $this->refreshComponent();
+    }
+
+    protected function refreshComponent()
+    {
+        $this->loadConversations();
+        $this->loadMessages();
     }
 
     public function sendMessage()
     {
         if (trim($this->newMessage) === '' && empty($this->attachments)) {
-            session()->flash('error', 'Message cannot be empty.');
             return;
         }
 
@@ -116,7 +131,6 @@ class Chat extends Component
             if ($this->selectedUserId) {
                 $selectedUser = User::find($this->selectedUserId);
                 if (!$selectedUser) {
-                    session()->flash('error', 'The selected user does not exist.');
                     return;
                 }
 
@@ -128,13 +142,12 @@ class Chat extends Component
                 $this->selectedUser = $selectedUser;
                 $this->loadConversations();
             } else {
-                session()->flash('error', 'Please select a user to chat with.');
                 return;
             }
         }
 
-        // Extract YouTube links from the message (if any)
-        $youtubeLinks = $this->extractYouTubeLinks($this->newMessage);
+        $this->isUploading = true;
+        $this->dispatch('uploadStarted');
 
         $messageData = [
             'conversation_id' => $this->selectedConversation->id,
@@ -145,16 +158,6 @@ class Chat extends Component
 
         $message = Message::create($messageData);
 
-        // Save YouTube links (if any)
-        foreach ($youtubeLinks as $link) {
-            $message->update([
-                'file_path' => $link,
-                'file_type' => 'youtube',
-                'file_name' => 'YouTube Link',
-            ]);
-        }
-
-        // Handle file uploads
         if ($this->attachments) {
             $filePaths = [];
             foreach ($this->attachments as $attachment) {
@@ -171,15 +174,16 @@ class Chat extends Component
                 'file_name' => $originalName,
             ]);
 
-            // Dispatch job to delete the file after 6 hours (for testing purposes, it is 55 minutes)
             DeleteExpiredFiles::dispatch($message)->delay(now()->addMinutes(55));
         }
 
         broadcast(new MessageSent($message))->toOthers();
         $this->dispatch('refreshMessages');
-        $this->dispatch('refreshUnreadMessages'); // Emit this to update unread count in sidebar
+        $this->dispatch('uploadFinished');
+
         $this->newMessage = '';
         $this->attachments = [];
+        $this->isUploading = false;
     }
 
     public function selectUser($userId)
@@ -213,9 +217,6 @@ class Chat extends Component
         if ($message && $message->sender_id == Auth::id()) {
             $message->delete();
             $this->loadMessages();
-            session()->flash('success', 'Message deleted successfully.');
-        } else {
-            session()->flash('error', 'You are not authorized to delete this message.');
         }
     }
 
@@ -232,9 +233,6 @@ class Chat extends Component
 
             $this->selectedConversation = null;
             $this->loadConversations();
-            session()->flash('success', 'Conversation deleted successfully.');
-        } else {
-            session()->flash('error', 'You are not authorized to delete this conversation.');
         }
     }
 

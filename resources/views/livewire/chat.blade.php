@@ -55,7 +55,6 @@
                     @endif
                 </div>
                 <div>
-                    <!-- Only show the delete conversation button if a conversation is selected -->
                     @if ($selectedConversation)
                         <button wire:click="deleteConversation({{ $selectedConversation->id }})" class="btn btn-danger btn-sm">
                             <i class="bi bi-trash-fill"></i> Delete Conversation
@@ -70,25 +69,25 @@
                     @foreach ($messages as $message)
                         <div class="chat-message {{ $message['sender_id'] == Auth::id() ? 'user' : '' }}">
                             @php
-                                // Fetch the user associated with the message
                                 $messageUser = $message['sender_id'] === Auth::id() ? Auth::user() : $message['receiver'];
 
                                 // Decode file paths (stored as JSON)
                                 $files = json_decode($message['file_path'], true);
                                 $images = [];
                                 $videos = [];
+                                $downloadLinks = [];
                                 $youtubeLinks = [];
 
-                                // Separate files by type
                                 if ($message['file_type'] === 'youtube') {
-                                    // Store the YouTube link in the youtubeLinks array
                                     $youtubeLinks[] = $message['file_path'];
-                                } else if ($files) {
+                                } elseif ($files) {
                                     foreach ($files as $file) {
                                         if (Str::contains($message['file_type'], 'image')) {
                                             $images[] = $file;
                                         } elseif (Str::contains($message['file_type'], 'video')) {
                                             $videos[] = $file;
+                                        } else {
+                                            $downloadLinks[] = asset('storage/' . $file);
                                         }
                                     }
                                 }
@@ -129,7 +128,6 @@
                                 <div class="row mt-3">
                                     @foreach ($youtubeLinks as $youtubeLink)
                                         @php
-                                            // Extract video ID from the link
                                             parse_str(parse_url($youtubeLink, PHP_URL_QUERY), $params);
                                             $videoId = $params['v'] ?? null;
                                         @endphp
@@ -138,6 +136,17 @@
                                                 <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen></iframe>
                                             </div>
                                         @endif
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <!-- Display Download Links -->
+                            @if (count($downloadLinks) > 0)
+                                <div class="row mt-3">
+                                    @foreach ($downloadLinks as $downloadLink)
+                                        <div class="col-md-12 mb-3">
+                                            <a href="{{ $downloadLink }}" class="btn btn-link" download>Download File</a>
+                                        </div>
                                     @endforeach
                                 </div>
                             @endif
@@ -165,8 +174,8 @@
                 <input type="file" id="fileInput" wire:model.lazy="attachments" class="d-none" multiple>
 
                 <form wire:submit.prevent="sendMessage" class="d-flex w-100" id="messageForm">
-                    <textarea wire:model.lazy="newMessage" class="form-control" rows="2" placeholder="Type your message" id="messageInput"></textarea>
-                    <button type="submit" class="btn btn-primary ms-2">
+                    <textarea wire:model.lazy="newMessage" class="form-control" rows="2" placeholder="Type your message" id="messageInput" @if($isUploading) disabled @endif></textarea>
+                    <button type="submit" class="btn btn-primary ms-2" @if($isUploading) disabled @endif>
                         <i class="bi bi-send-fill"></i> Send
                     </button>
                 </form>
@@ -208,7 +217,7 @@
         const messageForm = document.getElementById('messageForm');
 
         messageInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
+            if (event.key === 'Enter' && !event.shiftKey && !messageInput.disabled) {
                 event.preventDefault();
                 messageForm.dispatchEvent(new Event('submit'));
                 messageInput.value = '';

@@ -1,6 +1,15 @@
 body {
   background-color: #f8f9fa;
 }
+element {
+  zoom: 1.2;
+}
+
+/* New */
+element {
+  transform: scale(1.2);
+  transform-origin: 0 0;
+}
 .sidebar {
   height: 100vh;
   background-color: #ffffff;

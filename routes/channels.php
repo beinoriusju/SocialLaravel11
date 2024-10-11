@@ -29,3 +29,8 @@ Broadcast::channel('conversation-selected.{conversationId}', function ($user, $c
 Broadcast::channel('notifications.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
+
+Broadcast::channel('conversation.{conversationId}', function ($user, $conversationId) {
+    return $user->id === Conversation::find($conversationId)->sender_id ||
+           $user->id === Conversation::find($conversationId)->receiver_id;
+});

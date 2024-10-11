@@ -13,7 +13,7 @@
     <meta name="author" content="Your Name or Company Name">
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('front/favicon.ico') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/7.0.3/pusher.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/laravel-echo/1.11.1/echo.iife.min.js"></script> -->
     @vite(['resources/js/app.js', 'resources/css/app.css'])
@@ -72,7 +72,6 @@
     <script src="{{ asset('front/js/select2.js') }}"></script>
     <script src="{{ asset('front/js/ecommerce.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <!-- Custom JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('front/js/my.js') }}"></script>
 

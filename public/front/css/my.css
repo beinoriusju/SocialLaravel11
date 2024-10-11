@@ -1,3 +1,12 @@
+element {
+  zoom: 1.2;
+}
+
+/* New */
+element {
+  transform: scale(1.2);
+  transform-origin: 0 0;
+}
 .nav-pills .nav-link {
     display: flex;
     flex-direction: column;

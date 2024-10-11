@@ -26,7 +26,6 @@ class Chat extends Component
     public $query = '';
     public $users = [];
     public $messageLimit = 10;
-    public $isUploading = false;
 
     protected $listeners = [
         'refreshMessages',
@@ -127,6 +126,7 @@ class Chat extends Component
             return;
         }
 
+        // Ensure the selected conversation exists or create a new one
         if (!$this->selectedConversation) {
             if ($this->selectedUserId) {
                 $selectedUser = User::find($this->selectedUserId);
@@ -146,9 +146,7 @@ class Chat extends Component
             }
         }
 
-        $this->isUploading = true;
-        $this->dispatch('uploadStarted');
-
+        // Create the message
         $messageData = [
             'conversation_id' => $this->selectedConversation->id,
             'sender_id' => Auth::id(),
@@ -158,6 +156,7 @@ class Chat extends Component
 
         $message = Message::create($messageData);
 
+        // Handle file attachments
         if ($this->attachments) {
             $filePaths = [];
             foreach ($this->attachments as $attachment) {
@@ -174,16 +173,22 @@ class Chat extends Component
                 'file_name' => $originalName,
             ]);
 
+            // Schedule file deletion after 55 minutes
             DeleteExpiredFiles::dispatch($message)->delay(now()->addMinutes(55));
         }
 
+        // Broadcast the message event
         broadcast(new MessageSent($message))->toOthers();
-        $this->dispatch('refreshMessages');
-        $this->dispatch('uploadFinished');
 
+        // Reset state
         $this->newMessage = '';
         $this->attachments = [];
-        $this->isUploading = false;
+
+        // Emit the refresh messages event
+        $this->dispatch('refreshMessages');
+
+        // Trigger Livewire upload finish event
+        $this->dispatch('livewire-upload-finish');
     }
 
     public function selectUser($userId)
@@ -233,6 +238,7 @@ class Chat extends Component
 
             $this->selectedConversation = null;
             $this->loadConversations();
+            $this->dispatch('reload');
         }
     }
 

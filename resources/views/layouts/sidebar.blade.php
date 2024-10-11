@@ -40,7 +40,7 @@
                 </li>
                 @endif
                 <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="{{ route('chat') }}">
+                    <a class="nav-link" aria-current="page" href="{{ route('conversations') }}">
                         <!-- Unread Messages Badge with icon -->
                         <livewire:unread-messages-badge />
                         <span class="item-name">{{ __('translations.Messages') }}</span>

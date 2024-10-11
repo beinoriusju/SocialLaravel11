@@ -5,11 +5,11 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Conversation;
 use App\Models\Message;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithFileUploads;
 use App\Events\MessageSent;
 use App\Jobs\DeleteExpiredFiles;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class Chat extends Component
@@ -17,212 +17,174 @@ class Chat extends Component
     use WithFileUploads;
 
     public $messages = [];
-    public $conversations;
-    public $selectedConversation = null;
+    public $conversation;
     public $selectedUser = null;
     public $newMessage = '';
     public $attachments = [];
-    public $selectedUserId = null;
-    public $query = '';
-    public $users = [];
     public $messageLimit = 10;
 
     protected $listeners = [
         'refreshMessages',
         'loadMoreMessages',
-        'refreshUnreadMessages'
     ];
 
-    public function mount()
+    public function mount($id = null)
     {
-        $this->loadConversations();
-        $this->loadMostRecentConversation();
-    }
-
-    public function loadConversations()
-    {
-        $this->conversations = Conversation::where('sender_id', Auth::id())
-            ->orWhere('receiver_id', Auth::id())
-            ->with('sender', 'receiver', 'messages')
-            ->get()
-            ->map(function ($conversation) {
-                $conversation->hasUnreadMessages = Message::where('conversation_id', $conversation->id)
-                    ->where('receiver_id', Auth::id())
-                    ->whereNull('read_at')
-                    ->exists();
-                return $conversation;
-            })
-            ->sortByDesc(function ($conversation) {
-                return optional($conversation->messages->last())->created_at ?? $conversation->created_at;
-            });
-    }
-
-    public function loadMostRecentConversation()
-    {
-        $this->selectedConversation = $this->conversations->first();
-        if ($this->selectedConversation) {
-            $this->setSelectedUser();
-            $this->loadMessages();
+        if ($id) {
+            $this->conversation = Conversation::with('messages', 'sender', 'receiver')->find($id);
+            if ($this->conversation) {
+                $this->setSelectedUser();
+                $this->markMessagesAsRead();
+                $this->loadMessages();
+                Log::info('Loaded conversation with ID: ' . $id);
+            } else {
+                Log::warning('Conversation not found with ID: ' . $id);
+            }
         }
     }
 
-    private function setSelectedUser()
+    // Set the selected user for the chat
+    public function setSelectedUser()
     {
-        if ($this->selectedConversation->sender_id === Auth::id()) {
-            $this->selectedUser = $this->selectedConversation->receiver;
+        if ($this->conversation->sender_id === Auth::id()) {
+            $this->selectedUser = $this->conversation->receiver;
         } else {
-            $this->selectedUser = $this->selectedConversation->sender;
+            $this->selectedUser = $this->conversation->sender;
         }
+
+        Log::info('Selected user set to: ' . $this->selectedUser->id);
     }
 
-    public function loadMessages()
+    // Mark unread messages as read
+    public function markMessagesAsRead()
     {
-        if ($this->selectedConversation) {
-            $this->messages = Message::where('conversation_id', $this->selectedConversation->id)
-                ->orderBy('created_at', 'desc')
-                ->take($this->messageLimit)
-                ->with('sender', 'receiver')
-                ->get()
-                ->toArray();
-        } else {
-            $this->messages = [];
-        }
-    }
-
-    public function loadMoreMessages()
-    {
-        $this->messageLimit += 10;
-        $this->loadMessages();
-    }
-
-    public function conversationSelected($conversationId)
-    {
-        $this->selectedConversation = Conversation::with('messages', 'sender', 'receiver')->find($conversationId);
-        $this->setSelectedUser();
-
-        Message::where('conversation_id', $this->selectedConversation->id)
+        Message::where('conversation_id', $this->conversation->id)
             ->where('receiver_id', Auth::id())
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        $this->loadMessages();
-
-        $this->conversations = $this->conversations->filter(function ($conversation) use ($conversationId) {
-            return $conversation->id !== $conversationId;
-        })->prepend($this->selectedConversation);
-
-        $this->refreshComponent();
+        Log::info('Marked messages as read for conversation ID: ' . $this->conversation->id);
     }
 
+    // Load messages for the conversation
+    public function loadMessages()
+    {
+        $this->messages = Message::where('conversation_id', $this->conversation->id)
+            ->orderBy('created_at', 'desc')
+            ->take($this->messageLimit)
+            ->with('sender', 'receiver')
+            ->get()
+            ->toArray();
+
+        Log::info('Loaded ' . count($this->messages) . ' messages for conversation ID: ' . $this->conversation->id);
+    }
+
+    // Load more messages when scrolling
+    public function loadMoreMessages()
+    {
+        $this->messageLimit += 10;
+        $this->loadMessages();
+        Log::info('Loaded more messages, new limit: ' . $this->messageLimit);
+    }
+
+    // Refresh component to load messages again
     protected function refreshComponent()
     {
-        $this->loadConversations();
         $this->loadMessages();
     }
 
+    // Send a new message with optional file attachments
+    // Send a new message with optional file attachments and YouTube links
     public function sendMessage()
     {
-        // Validate that at least a message or an attachment is provided
         if (trim($this->newMessage) === '' && empty($this->attachments)) {
+            Log::warning('Attempted to send an empty message or no attachments');
             return;
         }
 
-        // Validate attachments if they exist
-        if ($this->attachments) {
-            $this->validate([
-                'attachments.*' => 'file|max:51200000', // 50 MB (50 * 1024 KB)
-            ]);
-        }
+        // Extract YouTube links from the message
+        $youtubeLinks = $this->extractYouTubeLinks($this->newMessage);
 
-        // Ensure the selected conversation exists or create a new one
-        if (!$this->selectedConversation) {
-            if ($this->selectedUserId) {
-                $selectedUser = User::find($this->selectedUserId);
-                if (!$selectedUser) {
-                    return;
-                }
-
-                $this->selectedConversation = Conversation::firstOrCreate([
-                    'sender_id' => Auth::id(),
-                    'receiver_id' => $this->selectedUserId
-                ]);
-
-                $this->selectedUser = $selectedUser;
-                $this->loadConversations();
-            } else {
-                return;
-            }
-        }
-
-        // Create the message
+        // Create a new message
         $messageData = [
-            'conversation_id' => $this->selectedConversation->id,
+            'conversation_id' => $this->conversation->id,
             'sender_id' => Auth::id(),
             'receiver_id' => $this->selectedUser->id,
             'body' => $this->newMessage,
         ];
 
         $message = Message::create($messageData);
+        Log::info('New message created with ID: ' . $message->id);
 
-        // Handle file attachments
-        if ($this->attachments) {
-            $filePaths = [];
-            foreach ($this->attachments as $attachment) {
-                $originalName = $attachment->getClientOriginalName();
-                $filePath = $attachment->storeAs('attachments', Str::uuid() . '_' . $originalName, 'public');
-                $filePaths[] = $filePath;
-
-                $fileType = $attachment->getMimeType();
-            }
-
-            $message->update([
-                'file_path' => json_encode($filePaths),
-                'file_type' => $fileType,
-                'file_name' => $originalName,
+        // Handle file uploads and YouTube links
+        if ($this->attachments || !empty($youtubeLinks)) {
+            $this->validate([
+                'attachments.*' => 'file|max:51200', // Max 50 MB per file
             ]);
 
-            // Schedule file deletion after 55 minutes
-            DeleteExpiredFiles::dispatch($message)->delay(now()->addMinutes(55));
+            $filePaths = [];
+
+            // Handle file attachments
+            if ($this->attachments) {
+                foreach ($this->attachments as $attachment) {
+                    $filePath = $attachment->store('attachments', 'public');
+                    $filePaths[] = $filePath;
+                }
+            }
+
+            // Add YouTube links as file paths
+            foreach ($youtubeLinks as $link) {
+                $filePaths[] = $link; // Store YouTube links directly as strings
+            }
+
+            // Update the message with the file paths
+            $message->update([
+                'file_path' => implode(',', $filePaths), // Save as a comma-separated string instead of JSON
+                'file_type' => !empty($youtubeLinks) ? 'youtube' : 'file', // Mark as YouTube or file
+            ]);
+
+            Log::info('Files and YouTube links attached to message ID: ' . $message->id);
+
+            // Schedule file deletion after 55 minutes (for file attachments only)
+            if ($this->attachments) {
+                DeleteExpiredFiles::dispatch($message)->delay(now()->addMinutes(55));
+            }
         }
 
-        // Broadcast the message event
+        // Broadcast the new message event for real-time updates
         broadcast(new MessageSent($message))->toOthers();
+        Log::info('Broadcasted MessageSent event for message ID: ' . $message->id);
 
-        // Reset state
+        // Reset the input fields
         $this->newMessage = '';
         $this->attachments = [];
 
-        // Emit the refresh messages event
+        // Emit the refresh messages event so the frontend updates immediately
         $this->dispatch('refreshMessages');
-
-        // Trigger Livewire upload finish event
-        $this->dispatch('livewire-upload-finish');
     }
 
-    public function selectUser($userId)
+    // Refresh messages
+    public function refreshMessages()
     {
-        $this->selectedUserId = $userId;
+        $this->loadMessages();
+    }
 
-        $existingConversation = Conversation::where(function ($query) use ($userId) {
-            $query->where('sender_id', Auth::id())
-                  ->where('receiver_id', $userId);
-        })->orWhere(function ($query) use ($userId) {
-            $query->where('sender_id', $userId)
-                  ->where('receiver_id', Auth::id());
-        })->first();
-
-        if ($existingConversation) {
-            $this->selectedConversation = $existingConversation;
-            $this->conversationSelected($existingConversation->id);
-        } else {
-            $this->selectedConversation = null;
-            $this->selectedUser = User::find($userId);
+    // Delete the entire conversation and its messages
+    public function deleteConversation()
+    {
+        foreach ($this->conversation->messages as $message) {
+            $message->delete();
         }
 
-        $this->loadConversations();
-        $this->query = '';
+        $this->conversation->delete();
+
+        Log::info('Deleted conversation ID: ' . $this->conversation->id);
+
+        // Redirect back to the conversation list
+        return redirect()->route('conversations');
     }
 
+    // Delete a single message
     public function deleteMessage($messageId)
     {
         $message = Message::find($messageId);
@@ -230,40 +192,11 @@ class Chat extends Component
         if ($message && $message->sender_id == Auth::id()) {
             $message->delete();
             $this->loadMessages();
+            Log::info('Deleted message ID: ' . $messageId);
         }
     }
 
-    public function deleteConversation($conversationId)
-    {
-        $conversation = Conversation::find($conversationId);
-
-        if ($conversation && ($conversation->sender_id == Auth::id() || $conversation->receiver_id == Auth::id())) {
-            foreach ($conversation->messages as $message) {
-                $message->delete();
-            }
-
-            $conversation->delete();
-
-            $this->selectedConversation = null;
-            $this->loadConversations();
-            $this->dispatch('reload');
-        }
-    }
-
-    public function refreshMessages()
-    {
-        $this->loadMessages();
-    }
-
-    public function updatedQuery()
-    {
-        if (strlen($this->query) >= 2) {
-            $this->users = User::where('username', 'like', '%' . $this->query . '%')->get();
-        } else {
-            $this->users = [];
-        }
-    }
-
+    // Extract YouTube links from the message body
     protected function extractYouTubeLinks($message)
     {
         if (!$message) {
@@ -280,6 +213,13 @@ class Chat extends Component
         return array_merge($videoMatches[0], $playlistMatches[0]);
     }
 
+    // Go back to the conversation list
+    public function goBackToConversationList()
+    {
+        return redirect()->route('conversations');
+    }
+
+    // Render the chat view
     public function render()
     {
         return view('livewire.chat')->extends('layouts.chat');

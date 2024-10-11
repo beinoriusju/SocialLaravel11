@@ -15,6 +15,7 @@ use App\Livewire\FriendsRequests;
 use App\Livewire\UserProfile;
 use App\Livewire\Notifications;
 use App\Livewire\Chat;
+use App\Livewire\ConversationList;
 use App\Http\Controllers\Backend\UserDataTableController;
 
 
@@ -47,10 +48,8 @@ Route::middleware(['auth', 'verified', SetLanguage::class])->group(function () {
     Route::get('/friends', Friends::class)->name('friends');
     Route::get('/friendsrequests', FriendsRequests::class)->name('friendsrequests');
     Route::get('/userprofile/{user}', UserProfile::class)->name('userprofile');
-    Route::get('/chat', Chat::class)->name('chat');
-    // Route::get('/dashboard', function () {
-    //     return view('dashboard');
-    // })->name('dashboard');
+    Route::get('/conversations', ConversationList::class)->name('conversations');
+    Route::get('/chat/{id}', Chat::class)->name('chat.show');
 });
 Route::view('/account-inactive', 'account-inactive')->name('account.inactive');
 

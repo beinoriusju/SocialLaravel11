@@ -25,8 +25,8 @@ return new class extends Migration
             $table->text('body')->nullable(); // Nullable to allow file-only messages
 
             // File-related fields
-            $table->string('file_path')->nullable(); // Path to the uploaded file
-            $table->string('file_name')->nullable(); // Original file name for reference
+            $table->longText('file_path')->nullable(); // Path to the uploaded file
+            $table->longText('file_name')->nullable(); // Original file name for reference
             $table->string('file_type')->nullable(); // MIME type of the file
 
             // Message deletion timestamps for both sender and receiver

@@ -13,8 +13,20 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->nullable();
+            $table->string('last_name')->nullable();
+            $table->string('username')->nullable();
+            $table->text('image')->nullable();
+            $table->string('location')->nullable();
+            $table->text('description')->nullable(); // About Me
+            $table->date('birthday')->nullable();    // Birthday field
+            $table->text('hobbies')->nullable();     // Hobbies field
+            $table->text('interests')->nullable();   // Interests field
+            $table->enum('role', ['admin', 'user'])->default('user');
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->string('email')->unique();
+            $table->boolean('is_private')->default(0);
+            $table->boolean('is_banned')->default(0);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

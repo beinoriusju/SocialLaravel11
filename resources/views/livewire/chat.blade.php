@@ -1,32 +1,55 @@
-<div>
-    <!-- Back Button for Mobile -->
-    <div class="d-block d-md-none">
-        <button class="btn btn-secondary mb-2" wire:click="goBackToConversationList">
-            <i class="bi bi-arrow-left"></i> Back to Conversations
-        </button>
-    </div>
+<div class="card tab-pane mb-0">
 
-    <!-- Chat Header -->
-    <div class="chat-header d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-            @if ($selectedUser)
-                <img src="{{ $selectedUser->image ? asset('storage/' . $selectedUser->image) : asset('front/images/default.png') }}"
-                     alt="avatar" class="rounded-circle" style="width: 50px;">
-                <span class="ms-2">{{ $selectedUser->username }}</span>
-            @endif
-        </div>
-        <div>
-            @if ($conversation)
-                <button wire:click="deleteConversation" class="btn btn-danger btn-sm">
-                    <i class="bi bi-trash-fill"></i> Delete Conversation
-                </button>
-            @endif
-        </div>
-    </div>
+  <div class="chat-head">
+      <!-- Back Button for Mobile -->
+      <header class="d-flex justify-content-between align-items-center pt-3 ps-3 pe-3 pb-3">
+          <div class="d-block">
+              <button class="btn btn-sm btn-primary rounded btn-icon" wire:click="goBackToConversationList">
+                  <i class="bi bi-arrow-left"></i>
+              </button>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+              <div class="d-block d-xl-none">
+                  <button class="btn btn-sm btn-primary rounded btn-icon" data-toggle="sidebar" data-active="true">
+                      <span class="btn-inner">
+                        <i class="bi bi-house-fill"></i>
+                      </span>
+                  </button>
+              </div>
+              <div class="avatar chat-user-profile m-0">
+                  <img src="{{ $selectedUser->image ? asset('storage/' . $selectedUser->image) : asset('front/images/default.png') }}" alt="avatar" class="avatar-50 rounded-pill" loading="lazy">
+              </div>
+              <div>
+                  <h5 class="mb-0">{{ $selectedUser->username }}</h5>
+              </div>
+          </div>
+
+          <div class="chat-header-icons d-inline-flex ms-auto">
+              <!-- Home Button -->
+              <a href="{{ route('blog') }}" class="chat-icon-home bg-primary-subtle d-flex align-items-center justify-content-center">
+                  <i class="bi bi-house-fill" style="font-size: 18px;"></i>
+              </a>
+
+              <!-- Optional: Uncomment these if needed -->
+              <!--
+              <a href="#" class="chat-icon-phone bg-primary-subtle d-flex align-items-center justify-content-center">
+                  <i class="material-symbols-outlined md-18">phone</i>
+              </a>
+              <a href="#" class="chat-icon-video bg-primary-subtle d-flex align-items-center justify-content-center">
+                  <i class="material-symbols-outlined md-18">videocam</i>
+              </a>
+              -->
+              <a href="#" wire:click="deleteConversation" class="chat-icon-delete bg-primary-subtle d-flex align-items-center justify-content-center">
+                  <i class="material-symbols-outlined md-18">delete</i>
+              </a>
+          </div>
+      </header>
+  </div>
+
     <!-- Chat Footer -->
-    <div class="chat-footer d-flex align-items-center p-0">
+    <div class="card-footer d-flex align-items-center p-0 border-top rounded-0">
         <a href="#" class="me-2" id="uploadTrigger">
-            <i class="bi bi-paperclip"></i>
+            <i class="bi bi-paperclip p-4"></i>
         </a>
         <input type="file" id="fileInput" wire:model="attachments" class="d-none" multiple>
 
@@ -39,114 +62,126 @@
     </div>
 
     <!-- Chat Body -->
-    <div class="chat-body" id="chat-body" style="overflow-y: auto;" wire:scroll.debounce.200ms="loadMoreMessages">
+    <!-- Chat Body -->
+    <div class="chat-body card-body bg-body" id="chat-body" style="overflow-y: auto;" wire:scroll.debounce.200ms="loadMoreMessages">
         @if (count($messages))
             @foreach ($messages as $message)
-            <div class="chat-message {{ $message['sender_id'] == Auth::id() ? 'user' : '' }}">
-                @php
-                    // Fetch the user associated with the message
-                    $messageUser = $message['sender_id'] === Auth::id() ? Auth::user() : $message['receiver'];
+                <div class="iq-message-body {{ $message['sender_id'] == Auth::id() ? 'iq-current-user' : 'iq-other-user' }}">
+                    @php
+                        // Fetch the user associated with the message
+                        $messageUser = $message['sender_id'] === Auth::id() ? Auth::user() : $message['receiver'];
 
-                    // Decode file paths (stored as a comma-separated string)
-                    $files = $message['file_path'] ? explode(',', $message['file_path']) : [];
-                    $images = [];
-                    $videos = [];
-                    $otherFiles = [];
-                    $youtubeLinks = [];
+                        // Decode file paths (stored as a comma-separated string)
+                        $files = $message['file_path'] ? explode(',', $message['file_path']) : [];
+                        $images = [];
+                        $videos = [];
+                        $otherFiles = [];
+                        $youtubeLinks = [];
 
-                    // Separate files by type
-                    foreach ($files as $file) {
-                        if (Str::contains($file, 'youtu')) {
-                            // If the file is a YouTube link, add to YouTube links array
-                            $youtubeLinks[] = $file;
-                        } else {
-                            $fileType = mime_content_type(storage_path('app/public/' . $file));
-                            if (Str::contains($fileType, 'image')) {
-                                $images[] = $file;
-                            } elseif (Str::contains($fileType, 'video')) {
-                                $videos[] = $file;
+                        // Separate files by type
+                        foreach ($files as $file) {
+                            if (Str::contains($file, 'youtu')) {
+                                $youtubeLinks[] = $file;
                             } else {
-                                $otherFiles[] = $file; // Handle all other file types
+                                $fileType = mime_content_type(storage_path('app/public/' . $file));
+                                if (Str::contains($fileType, 'image')) {
+                                    $images[] = $file;
+                                } elseif (Str::contains($fileType, 'video')) {
+                                    $videos[] = $file;
+                                } else {
+                                    $otherFiles[] = $file; // Handle all other file types
+                                }
                             }
                         }
-                    }
-                @endphp
+                    @endphp
 
-                <!-- Display Message Text -->
-                <p>{{ $message['body'] }}</p>
-
-                <!-- Display Images -->
-                @if (count($images) > 0)
-                    <div class="row">
-                        @foreach ($images as $image)
-                            <div class="col-md-4 mb-3">
-                                <div class="border rounded p-2">
-                                    <a href="{{ asset('storage/' . $image) }}" data-fslightbox="gallery-{{ $message['id'] }}" class="rounded">
-                                        <img src="{{ asset('storage/' . $image) }}" class="img-fluid rounded w-100" alt="Image" style="max-height: 300px;">
-                                    </a>
-                                </div>
-                            </div>
-                        @endforeach
+                    <div class="chat-profile text-center">
+                        <small class="iq-chating p-0 mb-0 d-block">{{ \Carbon\Carbon::parse($message['created_at'])->format('H:i') }}</small>
                     </div>
-                @endif
-
-                <!-- Display Videos -->
-                @if (count($videos) > 0)
-                    <div class="row mt-3">
-                        @foreach ($videos as $video)
-                            <div class="col-md-12 mb-3">
-                                <video controls class="w-100" style="max-height: 450px;">
-                                    <source src="{{ asset('storage/' . $video) }}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
+                    <div class="iq-chat-text">
+                        <div class="d-flex align-items-center {{ $message['sender_id'] == Auth::id() ? 'justify-content-end' : 'justify-content-start' }} gap-1 gap-md-2">
+                            <div class="iq-chating-content d-flex align-items-center">
+                                <p class="mr-2 mb-0">{{ $message['body'] }}</p>
                             </div>
-                        @endforeach
-                    </div>
-                @endif
-
-                <!-- Display YouTube Links -->
-                @if (count($youtubeLinks) > 0)
-                    <div class="row mt-3">
-                        @foreach ($youtubeLinks as $youtubeLink)
-                            @php
-                                parse_str(parse_url($youtubeLink, PHP_URL_QUERY), $params);
-                                $videoId = $params['v'] ?? null;
-                            @endphp
-                            @if ($videoId)
-                                <div class="col-md-12 mb-3">
-                                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen></iframe>
+                            @if ($message['sender_id'] == Auth::id())
+                                <div class="dropdown cursor-pointer more" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="More">
+                                    <div class="lh-1" id="post-option" data-bs-toggle="dropdown">
+                                        <span class="material-symbols-outlined text-dark">
+                                            more_vert
+                                        </span>
+                                    </div>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="post-option" style="">
+                                        <a class="dropdown-item" href="#" wire:click="deleteMessage({{ $message['id'] }})">
+                                            <span class="material-symbols-outlined align-middle font-size-20 me-1">delete</span>Delete
+                                        </a>
+                                    </div>
                                 </div>
                             @endif
-                        @endforeach
-                    </div>
-                @endif
+                        </div>
 
-                <!-- Display Download Links for Other File Types -->
-                @if (count($otherFiles) > 0)
-                    <div class="row mt-3">
-                        @foreach ($otherFiles as $otherFile)
-                            <div class="col-md-12 mb-3">
-                                <a href="{{ asset('storage/' . $otherFile) }}" class="btn btn-link" download>Download File</a>
+                        <!-- Display Images -->
+                        @if (count($images) > 0)
+                            <div class="row">
+                                @foreach ($images as $image)
+                                    <div class="col-md-4 mb-3">
+                                        <div class="border rounded p-2">
+                                            <a href="{{ asset('storage/' . $image) }}" data-fslightbox="gallery-{{ $message['id'] }}" class="rounded">
+                                                <img src="{{ asset('storage/' . $image) }}" class="img-fluid rounded w-100" alt="Image" style="max-height: 300px;">
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
+                        @endif
+
+                        <!-- Display Videos -->
+                        @if (count($videos) > 0)
+                            <div class="row mt-3">
+                                @foreach ($videos as $video)
+                                    <div class="col-md-12 mb-3">
+                                        <video controls class="w-100" style="max-height: 450px;">
+                                            <source src="{{ asset('storage/' . $video) }}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <!-- Display YouTube Links -->
+                        @if (count($youtubeLinks) > 0)
+                            <div class="row mt-3">
+                                @foreach ($youtubeLinks as $youtubeLink)
+                                    @php
+                                        parse_str(parse_url($youtubeLink, PHP_URL_QUERY), $params);
+                                        $videoId = $params['v'] ?? null;
+                                    @endphp
+                                    @if ($videoId)
+                                        <div class="col-md-12 mb-3">
+                                            <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ $videoId }}" frameborder="0" allowfullscreen></iframe>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <!-- Display Download Links for Other File Types -->
+                        @if (count($otherFiles) > 0)
+                            <div class="row mt-3">
+                                @foreach ($otherFiles as $otherFile)
+                                    <div class="col-md-12 mb-3">
+                                        <a href="{{ asset('storage/' . $otherFile) }}" class="btn btn-link" download>Download File</a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
-                @endif
-
-                <small class="text-muted">{{ \Carbon\Carbon::parse($message['created_at'])->diffForHumans() }}</small>
-
-                <!-- Delete message button (only for the sender) -->
-                @if ($message['sender_id'] == Auth::id())
-                    <button wire:click="deleteMessage({{ $message['id'] }})" class="btn btn-danger btn-sm mt-2">
-                        <i class="bi bi-trash"></i> Delete
-                    </button>
-                @endif
-            </div>
+                </div>
             @endforeach
         @else
             <p>No messages to show</p>
         @endif
     </div>
-
 </div>
 
 <script>

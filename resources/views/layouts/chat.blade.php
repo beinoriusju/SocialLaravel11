@@ -29,7 +29,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 
     <!-- Additional Chat CSS -->
-    <link rel="stylesheet" href="{{ asset('front/css/chat.css') }}">
+    <!-- <link rel="stylesheet" href="{{ asset('front/css/chat.css') }}"> -->
 </head>
 <body>
     <div class="position-relative">

@@ -7,6 +7,10 @@ element {
   transform: scale(1.2);
   transform-origin: 0 0;
 }
+element {
+  zoom: 1.2;
+}
+
 .nav-pills .nav-link {
     display: flex;
     flex-direction: column;

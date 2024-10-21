@@ -8,8 +8,8 @@ use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithFileUploads;
 use App\Events\MessageSent;
+use App\Events\MessageDeleted;
 use App\Jobs\DeleteExpiredFiles;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class Chat extends Component
@@ -36,9 +36,6 @@ class Chat extends Component
                 $this->setSelectedUser();
                 $this->markMessagesAsRead();
                 $this->loadMessages();
-                Log::info('Loaded conversation with ID: ' . $id);
-            } else {
-                Log::warning('Conversation not found with ID: ' . $id);
             }
         }
     }
@@ -51,8 +48,6 @@ class Chat extends Component
         } else {
             $this->selectedUser = $this->conversation->sender;
         }
-
-        Log::info('Selected user set to: ' . $this->selectedUser->id);
     }
 
     // Mark unread messages as read
@@ -62,8 +57,6 @@ class Chat extends Component
             ->where('receiver_id', Auth::id())
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
-
-        Log::info('Marked messages as read for conversation ID: ' . $this->conversation->id);
     }
 
     // Load messages for the conversation
@@ -75,8 +68,6 @@ class Chat extends Component
             ->with('sender', 'receiver')
             ->get()
             ->toArray();
-
-        Log::info('Loaded ' . count($this->messages) . ' messages for conversation ID: ' . $this->conversation->id);
     }
 
     // Load more messages when scrolling
@@ -84,21 +75,12 @@ class Chat extends Component
     {
         $this->messageLimit += 10;
         $this->loadMessages();
-        Log::info('Loaded more messages, new limit: ' . $this->messageLimit);
     }
 
-    // Refresh component to load messages again
-    protected function refreshComponent()
-    {
-        $this->loadMessages();
-    }
-
-    // Send a new message with optional file attachments
     // Send a new message with optional file attachments and YouTube links
     public function sendMessage()
     {
         if (trim($this->newMessage) === '' && empty($this->attachments)) {
-            Log::warning('Attempted to send an empty message or no attachments');
             return;
         }
 
@@ -114,7 +96,6 @@ class Chat extends Component
         ];
 
         $message = Message::create($messageData);
-        Log::info('New message created with ID: ' . $message->id);
 
         // Handle file uploads and YouTube links
         if ($this->attachments || !empty($youtubeLinks)) {
@@ -143,8 +124,6 @@ class Chat extends Component
                 'file_type' => !empty($youtubeLinks) ? 'youtube' : 'file', // Mark as YouTube or file
             ]);
 
-            Log::info('Files and YouTube links attached to message ID: ' . $message->id);
-
             // Schedule file deletion after 55 minutes (for file attachments only)
             if ($this->attachments) {
                 DeleteExpiredFiles::dispatch($message)->delay(now()->addMinutes(55));
@@ -153,13 +132,19 @@ class Chat extends Component
 
         // Broadcast the new message event for real-time updates
         broadcast(new MessageSent($message))->toOthers();
-        Log::info('Broadcasted MessageSent event for message ID: ' . $message->id);
 
         // Reset the input fields
-        $this->newMessage = '';
-        $this->attachments = [];
+        $this->resetForm();
 
         // Emit the refresh messages event so the frontend updates immediately
+        $this->dispatch('refreshMessages');
+    }
+
+    // Reset form fields after sending a message
+    private function resetForm()
+    {
+        $this->newMessage = '';
+        $this->attachments = [];
         $this->dispatch('refreshMessages');
     }
 
@@ -178,8 +163,6 @@ class Chat extends Component
 
         $this->conversation->delete();
 
-        Log::info('Deleted conversation ID: ' . $this->conversation->id);
-
         // Redirect back to the conversation list
         return redirect()->route('conversations');
     }
@@ -192,7 +175,11 @@ class Chat extends Component
         if ($message && $message->sender_id == Auth::id()) {
             $message->delete();
             $this->loadMessages();
-            Log::info('Deleted message ID: ' . $messageId);
+
+            // Broadcast the message deletion event
+            broadcast(new MessageSent($message, true))->toOthers();
+            $this->dispatch('refreshMessages');
+
         }
     }
 

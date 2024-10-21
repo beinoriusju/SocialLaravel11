@@ -140,7 +140,7 @@
         <input type="file" id="fileInput" wire:model="attachments" class="d-none" multiple>
 
         <form wire:submit.prevent="sendMessage" class="d-flex w-100" id="messageForm">
-            <textarea wire:model.lazy="newMessage" class="form-control" rows="2" placeholder="Type your message" id="messageInput"></textarea>
+            <textarea wire:model.lazy="newMessage" wire:keydown.enter.prevent="sendMessage" class="form-control" rows="2" placeholder="Type your message" id="messageInput"></textarea>
             <button type="submit" class="btn btn-primary ms-2" id="sendMessageButton">
                 <i class="bi bi-send-fill"></i> Send
             </button>
@@ -149,97 +149,99 @@
 </div>
 
 <script>
-    document.addEventListener('livewire:init', () => {
-        const sendMessageButton = document.getElementById('sendMessageButton');
-        const fileInput = document.getElementById('fileInput');
-        const messageInput = document.getElementById('messageInput');
-        const messageForm = document.getElementById('messageForm');
+document.addEventListener('livewire:init', () => {
+    const sendMessageButton = document.getElementById('sendMessageButton');
+    const fileInput = document.getElementById('fileInput');
+    const messageInput = document.getElementById('messageInput');
+    const messageForm = document.getElementById('messageForm');
 
-        // Echo for real-time messaging
-        const conversationId = @json($conversation ? $conversation->id : null);
-        if (conversationId) {
-            Echo.private(`conversation.${conversationId}`)
-                .listen('MessageSent', (event) => {
-                    console.log('MessageSent event received:', event);
-                    Livewire.dispatch('refreshMessages');
-                });
-        }
+    // Echo for real-time messaging
+    const conversationId = @json($conversation ? $conversation->id : null);
+    if (conversationId) {
+        Echo.private(`conversation.${conversationId}`)
+            .listen('MessageSent', (event) => {
+                console.log('MessageSent event received:', event);
+                Livewire.dispatch('refreshMessages');
+            });
+    }
 
-        // Disable send button on file selection
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                sendMessageButton.disabled = true;
-            }
-        });
-
-        // Trim message and enable button only if trimmed message is not empty
-        function checkMessage() {
-            const trimmedMessage = messageInput.value.trim();
-            sendMessageButton.disabled = trimmedMessage === '' && fileInput.files.length === 0;
-        }
-
-        // Handle message typing (trim the message)
-        messageInput.addEventListener('input', () => {
-            checkMessage();
-        });
-
-        // Livewire upload start: keep the button disabled
-        Livewire.on('livewire-upload-start', () => {
+    // Disable send button on file selection
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
             sendMessageButton.disabled = true;
-        });
-
-        // Livewire upload finish: enable the send button again
-        Livewire.on('livewire-upload-finish', () => {
-            sendMessageButton.disabled = false;
-        });
-
-        // Livewire upload error: enable the send button in case of errors
-        Livewire.on('livewire-upload-error', () => {
-            alert('There was an error during the file upload.');
-            sendMessageButton.disabled = false;
-        });
-
-        // Form submit on Enter key
-        messageInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                messageForm.dispatchEvent(new Event('submit'));
-                checkMessage(); // Recheck the message after submission
-            }
-        });
-
-        // Handle file input trigger for uploading files
-        document.getElementById('uploadTrigger').addEventListener('click', (event) => {
-            event.preventDefault();
-            document.getElementById('fileInput').click();
-        });
-
-        // After form submission, clear the message input and check button status
-        messageForm.addEventListener('submit', () => {
-            messageInput.value = '';
-            fileInput.value = ''; // Clear file input after submission
-            sendMessageButton.disabled = true; // Disable the button until next input or file selection
-        });
-
-        // Refresh messages and scroll to the top
-        Livewire.on('refreshMessages', () => {
-            setTimeout(() => {
-                scrollToTop();
-            }, 100);
-        });
-
-        // Auto-scroll to top function
-        function scrollToTop() {
-            const chatBody = document.getElementById('chat-body');
-            if (chatBody) {
-                chatBody.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            }
         }
-
-        // Initial scroll to top when page loads
-        scrollToTop();
     });
+
+    // Trim message and enable button only if trimmed message is not empty
+    function checkMessage() {
+        const trimmedMessage = messageInput.value.trim();
+        sendMessageButton.disabled = trimmedMessage === '' && fileInput.files.length === 0;
+    }
+
+    // Handle message typing (trim the message)
+    messageInput.addEventListener('input', () => {
+        checkMessage();
+    });
+
+    // Livewire upload start: keep the button disabled
+    Livewire.on('livewire-upload-start', () => {
+        sendMessageButton.disabled = true;
+    });
+
+    // Livewire upload finish: enable the send button again
+    Livewire.on('livewire-upload-finish', () => {
+        sendMessageButton.disabled = false;
+    });
+
+    // Livewire upload error: enable the send button in case of errors
+    Livewire.on('livewire-upload-error', () => {
+        alert('There was an error during the file upload.');
+        sendMessageButton.disabled = false;
+    });
+
+    // Form submit on Enter key
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            messageForm.dispatchEvent(new Event('submit')); // Submit form, same as clicking the send button
+        }
+    });
+
+    // After form submission, clear the message input and check button status
+    messageForm.addEventListener('submit', () => {
+        messageInput.value = '';  // Clear the input
+        fileInput.value = '';     // Clear file input after submission
+        sendMessageButton.disabled = true; // Disable the button until next input or file selection
+
+        // Immediately focus on the message input field again, for all browsers
+        messageInput.focus();
+    });
+
+    // Handle file input trigger for uploading files
+    document.getElementById('uploadTrigger').addEventListener('click', (event) => {
+        event.preventDefault();
+        document.getElementById('fileInput').click();
+    });
+
+    // Refresh messages and scroll to the top
+    Livewire.on('refreshMessages', () => {
+        setTimeout(() => {
+            scrollToTop();
+        }, 100);
+    });
+
+    // Auto-scroll to top function
+    function scrollToTop() {
+        const chatBody = document.getElementById('chat-body');
+        if (chatBody) {
+            chatBody.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // Initial scroll to top when page loads
+    scrollToTop();
+});
 </script>

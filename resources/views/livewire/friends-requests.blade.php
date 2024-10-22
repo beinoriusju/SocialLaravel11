@@ -12,7 +12,7 @@
                                             <div class="profile-detail d-flex">
                                                 <div class="profile-img pe-lg-4">
                                                     <a href="{{ route('userprofile', ['user' => $request->user_id]) }}">
-                                                        <img src="{{ $request->user->image ? asset('storage/' . $request->user->image) : asset('front/images/default.png') }}" alt="profile-img" class="avatar-130 img-fluid">
+                                                        <img src="{{ $request->user->image ? asset('storage/' . $request->user->image) : asset('front/images/default.png') }}" alt="profile-img" class="avatar-130 img-fluid" >
                                                     </a>
                                                 </div>
                                                 <div class="user-data-block mt-md-0 mt-2">

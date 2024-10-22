@@ -39,13 +39,7 @@
                     </a>
                 </li>
                 @endif
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="{{ route('conversations') }}">
-                        <!-- Unread Messages Badge with icon -->
-                        <livewire:unread-messages-badge />
-                        <span class="item-name">{{ __('translations.Messages') }}</span>
-                    </a>
-                </li>
+      
                 <!-- Separate links for Friends, Friend Requests, and Users -->
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('friends') }}">
@@ -90,8 +84,21 @@
                     </a>
                 </li>
                 @endif
-
                 <li class="nav-item">
+                    <a class="nav-link" href="javascript:void(0);" onclick="changeLanguage('{{ route('lt') }}')">
+                        <i class="icon material-symbols-outlined filled">language</i>
+                        <i class="sidenav-mini-icon">LT</i>
+                        <span class="item-name">{{ __('translations.Lithuanian') }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="javascript:void(0);" onclick="changeLanguage('{{ route('en') }}')">
+                        <i class="icon material-symbols-outlined filled">language</i>
+                        <i class="sidenav-mini-icon">EN</i>
+                        <span class="item-name">{{ __('translations.English') }}</span>
+                    </a>
+                </li>
+                <!-- <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="collapse" href="#language-list" role="button" aria-expanded="false" aria-controls="sidebar-special">
                         <i class="icon material-symbols-outlined">language</i>
                         <span class="item-name">{{ __('translations.Language') }}</span>
@@ -113,7 +120,7 @@
                             </a>
                         </li>
                     </ul>
-                </li>
+                </li> -->
             </ul>
         </div>
     </div>

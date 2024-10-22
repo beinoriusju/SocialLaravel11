@@ -9,13 +9,13 @@
               </button>
           </div>
           <div class="d-flex align-items-center gap-3">
-              <div class="d-block d-xl-none">
+              <!-- <div class="d-block d-xl-none">
                   <button class="btn btn-sm btn-primary rounded btn-icon" data-toggle="sidebar" data-active="true">
                       <span class="btn-inner">
                         <i class="bi bi-house-fill"></i>
                       </span>
                   </button>
-              </div>
+              </div> -->
               <div class="avatar chat-user-profile m-0">
                   <img src="{{ $selectedUser->image ? asset('storage/' . $selectedUser->image) : asset('front/images/default.png') }}" alt="avatar" class="avatar-50 rounded-pill" loading="lazy">
               </div>

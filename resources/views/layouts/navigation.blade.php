@@ -1,92 +1,70 @@
 <div class="iq-top-navbar border-bottom">
   <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar p-lg-0">
     <div class="container-fluid navbar-inner">
-      <div class="d-flex align-items-center pb-2 pb-lg-0 d-xl-none">
-        <a class="sidebar-toggle" data-toggle="sidebar" data-active="true" href="javascript:void(0);">
+      <div class="d-flex align-items-center pb-2 pb-lg-0 flex-wrap">
+        <a class="sidebar-toggle me-2" data-toggle="sidebar" data-active="true" href="javascript:void(0);">
           <div class="icon material-symbols-outlined iq-burger-menu">menu</div>
         </a>
+
+        <!-- Home Icon -->
         <a class="nav-link menu-arrow justify-content-start" href="{{ url('/') }}">
-          <span class="nav-text">{{ __('translations.Home') }}</span>
+          <i class="icon material-symbols-outlined">table_chart</i>
         </a>
+
+        <!-- Newsfeed Icon -->
         <a class="nav-link menu-arrow justify-content-start" href="{{ route('newsfeed') }}">
-          <span class="nav-text">{{ __('translations.Newsfeed') }}</span>
+          <i class="icon material-symbols-outlined">newspaper</i>
         </a>
+
+        <!-- Events Icon -->
         <a class="nav-link menu-arrow justify-content-start" href="{{ route('events') }}">
-          <span class="nav-text">{{ __('translations.Events') }}</span>
+          <i class="icon material-symbols-outlined">calendar_month</i>
         </a>
-      </div>
-      <div class="d-flex align-items-center">
-        <div class="d-flex align-items-center justify-content-between product-offcanvas">
-          <div class="offcanvas offcanvas-end shadow-none iq-product-menu-responsive d-none d-xl-block" tabindex="-1" id="offcanvasBottomNav">
-            <div class="offcanvas-body">
-              <ul class="iq-nav-menu list-unstyled">
-                <li class="nav-item">
-                  <a class="nav-link menu-arrow justify-content-start" href="{{ url('/') }}">
-                    <span class="nav-text">{{ __('translations.Home') }}</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link menu-arrow justify-content-start" href="{{ route('newsfeed') }}">
-                    <span class="nav-text">{{ __('translations.Newsfeed') }}</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link menu-arrow justify-content-start" href="{{ route('events') }}">
-                    <span class="nav-text">{{ __('translations.Events') }}</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
 
-        <!-- Make the search bar visible on all screens -->
+        <!-- Messages Icon with Unread Count -->
+        <a class="nav-link" href="{{ route('conversations') }}">
+          <i class="icon material-symbols-outlined">mail</i>
+          <livewire:unread-messages-badge /> <!-- Unread messages handled by Livewire -->
+        </a>
+
+        <!-- Notifications Icon with Unread Count -->
+        <a class="nav-link" href="{{ route('notifications') }}">
+          <i class="icon material-symbols-outlined">notifications</i>
+          <livewire:notification-dropdown /> <!-- Unread notifications handled by Livewire -->
+        </a>
+
+        <!-- Search Bar -->
+        <div class="iq-search-bar device-search position-relative ms-3 d-none d-md-block">
+          <livewire:user-search />
+        </div>
+      </div>
+
+      <!-- Mobile Search Bar (Full Width on Mobile) -->
+      <div class="d-md-none">
         <div class="iq-search-bar device-search position-relative">
-          <livewire:user-search /> <!-- Your Livewire search component -->
-
-        </div>
-        <div class="">
-          <ul class="navbar-nav navbar-list">
-            <!-- Mobile Search Icon -->
-            <!-- <li class="nav-item d-lg-none">
-              <div class="iq-search-bar device-search">
-                <form class="searchbox open-modal-search">
-                  <a class="d-lg-none d-flex text-body" href="javascript:void(0);">
-                    <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="7.82491" cy="7.82495" r="6.74142" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></circle>
-                      <path d="M12.5137 12.8638L15.1567 15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                  </a>
-                </form>
-              </div>
-            </li> -->
-
-            <!-- Notification Dropdown -->
-            <livewire:notification-dropdown />
-
-            <li class="nav-item d-none d-lg-none">
-              <a href="../app/chat.html" class="dropdown-toggle d-flex align-items-center" id="mail-drop-1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="material-symbols-outlined">mail</i>
-                <span class="mobile-text ms-3">Message</span>
-              </a>
-            </li>
-          </ul>
+          <livewire:user-search />
         </div>
       </div>
-
-
     </div>
   </nav>
 </div>
 
-    <script>
-        document.addEventListener('livewire:init', () => {
-            const userId = @json(Auth::id());
+<script>
+    document.addEventListener('livewire:init', () => {
+        const userId = @json(Auth::id());
 
-            Echo.private(`notifications.${userId}`)
-                .listen('NotificationSent', (event) => {
-                    Livewire.dispatch('notificationsUpdated'); // Emit event to refresh notifications
-                });
-        });
-    </script>
-</div>
+        Echo.private(`notifications.${userId}`)
+            .listen('NotificationSent', (event) => {
+                Livewire.dispatch('notificationsUpdated'); // Emit event to refresh notifications
+            });
+
+        Echo.private(`user.${userId}`)
+            .listen('MessageSent', (event) => {
+                Livewire.dispatch('refreshUnreadMessages'); // Emit event to refresh unread messages
+            });
+    });
+
+    function changeLanguage(url) {
+        window.location.href = url; // Redirect to the selected language route
+    }
+</script>

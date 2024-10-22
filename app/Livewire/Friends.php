@@ -71,7 +71,7 @@ class Friends extends Component
                     'type' => 'unfriend',
                     'sender_id' => auth()->id(), // The logged-in user who unfriended
                     'receiver_id' => $userId, // Notify the unfriended user
-                    'message' => 'has unfriended you.',
+                    'message' => auth()->user()->username . ' has unfriended you.',
                     'url' => '#',
                 ]);
 

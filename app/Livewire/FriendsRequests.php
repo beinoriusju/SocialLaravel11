@@ -61,7 +61,7 @@ class FriendsRequests extends Component
                     'type' => 'friend_accepted',
                     'sender_id' => auth()->id(),
                     'receiver_id' => $userId,
-                    'message' => 'accepted your friend request.',
+                    'message' => auth()->user()->username .' accepted your friend request.',
                     'url' => '#',
                 ]);
 
@@ -94,7 +94,7 @@ class FriendsRequests extends Component
                     'type' => 'friend_rejected',
                     'sender_id' => auth()->id(),
                     'receiver_id' => $userId,
-                    'message' => 'rejected your friend request.',
+                    'message' => auth()->user()->username . ' rejected your friend request.',
                     'url' => '#',
                 ]);
 

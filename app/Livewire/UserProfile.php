@@ -121,7 +121,7 @@ class UserProfile extends Component
     public function updatedNewProfileImage()
     {
         $this->validate([
-            'newProfileImage' => 'image|max:200048', // 2MB Max
+            'newProfileImage' => 'image|max:20000', // 2MB Max
         ]);
 
         $userFolder = 'profileImages/' . $this->user->id;

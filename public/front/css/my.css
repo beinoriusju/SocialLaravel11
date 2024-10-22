@@ -28,3 +28,37 @@ element {
     height: 50px; /* Adjust to your preference */
     margin-bottom: 10px; /* Adjust spacing between icon and text */
 }
+
+.badgenav {
+    font-size: 0.75rem; /* Adjust the font size */
+    padding: 0.25em 0.5em; /* Adjust padding */
+    border-radius: 50%; /* Make the badge circular */
+    background-color: #dc3545; /* Bootstrap danger color (red) */
+    color: white; /* Ensure the text is white */
+    position: absolute; /* Position badge over the icon */
+    top: -5px; /* Adjust vertical position */
+    right: -5px; /* Adjust horizontal position */
+}
+
+.nav-link {
+    position: relative; /* Ensure the badge stays inside the nav-link */
+}
+
+.avatar-130{
+  min-height: 50px;
+  height: 50px;
+  width: 40px;
+  min-width: 50px;
+}
+
+/* .profile-img{
+  min-height: 50px;
+  height: 50px;
+  width: 40px;
+} */
+/* Ensure the search bar takes full width on mobile */
+/* @media (max-width: 767.98px) {
+    .iq-search-bar.device-search {
+        width: 100%;
+    }
+} */

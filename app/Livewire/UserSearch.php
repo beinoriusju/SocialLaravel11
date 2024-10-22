@@ -65,7 +65,7 @@ class UserSearch extends Component
                     'type' => 'friend_request',
                     'sender_id' => auth()->id(),
                     'receiver_id' => $receiverId,
-                    'message' => 'sent you a friend request.',
+                    'message' => auth()->user()->username . 'sent you a friend request.',
                     'url' => route('userprofile', ['user' => auth()->id()]),
                 ]);
 
@@ -109,7 +109,7 @@ class UserSearch extends Component
                         'type' => 'friend_request_canceled',
                         'sender_id' => auth()->id(),
                         'receiver_id' => $receiverId,
-                        'message' => 'canceled the friend request',
+                        'message' => auth()->user()->username . ' canceled the friend request',
                         'url' => '#',
                     ]);
                 } elseif ($status === 'accepted') {
@@ -117,7 +117,7 @@ class UserSearch extends Component
                         'type' => 'unfriend',
                         'sender_id' => auth()->id(),
                         'receiver_id' => $receiverId,
-                        'message' => 'has unfriended you',
+                        'message' => auth()->user()->username . ' has unfriended you',
                         'url' => '#',
                     ]);
                 }

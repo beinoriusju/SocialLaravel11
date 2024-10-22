@@ -71,7 +71,7 @@ class UsersList extends Component
                     'type' => 'friend_accepted',
                     'sender_id' => auth()->id(),
                     'receiver_id' => $user->id,
-                    'message' => 'accepted your friend request',
+                    'message' => auth()->user()->username . ' accepted your friend request',
                     'url' => '#',
                 ]);
 
@@ -126,7 +126,7 @@ class UsersList extends Component
                 'type' => 'friend_request',
                 'sender_id' => auth()->id(),
                 'receiver_id' => $user->id,
-                'message' => 'sent you a friend request',
+                'message' => auth()->user()->username . ' sent you a friend request',
                 'url' => '#',
             ]);
 
@@ -172,7 +172,7 @@ class UsersList extends Component
                         'type' => 'friend_request_canceled',
                         'sender_id' => auth()->id(),
                         'receiver_id' => $user->id,
-                        'message' => 'canceled the friend request',
+                        'message' => auth()->user()->username . ' canceled the friend request',
                         'url' => '#',
                     ]);
                 } elseif ($status === 'accepted') {
@@ -180,7 +180,7 @@ class UsersList extends Component
                         'type' => 'unfriend',
                         'sender_id' => auth()->id(),
                         'receiver_id' => $user->id,
-                        'message' => 'has unfriended you',
+                        'message' => auth()->user()->username . ' has unfriended you',
                         'url' => '#',
                     ]);
                 }

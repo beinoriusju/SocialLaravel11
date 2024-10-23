@@ -1,0 +1,58 @@
+su - user
+mv srv625407.hstgr.cloud/ srv625407.hstgr.cloud.bak
+git clone https://github.com/Vaidas393/SocialLaravel11.git srv625407.hstgr.cloud
+rm -rf srv625407.hstgr.cloud.bak/
+edit env, rename subcategories, fix vhotst file,
+cd srv625407.hstgr.cloud
+composer install
+composer update
+php artisan key:generate
+install node js(node source)
+cd srv625407.hstgr.cloud/
+npm install
+npm run build
+php artisan storage:link
+exit
+sudo ufw allow 8081
+sudo apt-get install supervisor
+cd /etc/supervisor/conf.d
+
+nano laravel-reverb.conf
+
+
+[program:laravel-reverb]
+process_name=%(program_name)s_%(process_num)02d
+command=php /home/user/htdocs/srv618462.hstgr.cloud/artisan reverb:start
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=user
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/home/user/htdocs/srv618462.hstgr.cloud/reverb.log
+stopwaitsecs=3600
+
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start "laravel-reverb:*"
+
+nano laravel-queue.conf
+
+[program:laravel-queue]
+process_name=%(program_name)s_%(process_num)02d
+command=php /home/user/htdocs/srv625407.hstgr.cloud/artisan queue:work --tries=3 --timeout=120
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=user
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/home/user/htdocs/srv625407.hstgr.cloud/reverb.log
+stopwaitsecs=3600
+
+sudo supervisorctl start "laravel-queue:*"
+
+
+cd /home/user/htdocs/srv625407.hstgr.cloud

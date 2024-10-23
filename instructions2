@@ -1,0 +1,78 @@
+sudo apt update
+sudo apt upgrade
+sudo apt install apache2
+sudo ufw allow "Apache Full"
+sudo apt install php libapache2-mod-php php-mbstring php-gd php-xml php-cli php-zip php-json php-curl php-intl php-bcmath php-mysql php-soap php-ldap php-imap php-opcache php-xmlrpc php-redis php-sqlite3
+sudo apt install mysql-server
+sudo mysql
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'AmSikloP?nn1';
+exit
+sudo mysql_secure_installation
+CREATE DATABASE laravelexample CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+exit
+cd /var/www/
+git clone https://github.com/Vaidas393/SocialLaravel11.git laravelexample
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === 'dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+sudo mv composer.phar /usr/local/bin/composer
+cd laravelexample
+sudo chgrp -R www-data /var/www/laravelexample
+sudo chmod -R 775  /var/www/laravelexample/storage/
+cd /etc/apache2/sites-available/
+sudo nano laravelexample.net.conf
+
+<VirtualHost *:80>
+   ServerName vpsocial.online
+   ServerAdmin webmaster@thedomain.com
+   DocumentRoot /var/www/laravelexample/public
+   <Directory /var/www/laravelexample>
+       AllowOverride All
+   </Directory>
+   ErrorLog ${APACHE_LOG_DIR}/error.log
+   CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
+sudo a2dissite 000-default.conf
+sudo a2ensite laravelexample.net.conf
+sudo a2enmod rewrite
+cd /
+sudo service apache2 restart
+sudo apt update
+sudo apt install certbot python3-certbot-apache
+sudo certbot --apache
+sudo apt-get install -y curl
+curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
+sudo -E bash nodesource_setup.sh
+sudo apt-get install -y nodejs
+
+
+Install file manager and phpMyAdmin
+cd /var/www/laravelexample
+composer require "studio-42/elfinder"
+mkdir public/elfinder
+nano config/elfinder.php
+
+<?php
+
+return [
+    'roots' => [
+        [
+            'driver' => 'LocalFileSystem',
+            'path' => public_path('elfinder/files/'),
+            'URL' => env('APP_URL') . '/elfinder/files/',
+            'accessControl' => 'access' // filter access
+        ]
+    ]
+];
+
+use Barryvdh\Elfinder\ElfinderController;
+
+Route::group(['prefix' => 'elfinder'], function () {
+    Route::get('connector', [ElfinderController::class, 'showConnector']);
+});
+
+mkdir -p public/elfinder/files

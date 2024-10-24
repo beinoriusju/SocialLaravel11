@@ -5,9 +5,10 @@ sudo ufw allow "Apache Full"
 sudo apt install php libapache2-mod-php php-mbstring php-gd php-xml php-cli php-zip php-json php-curl php-intl php-bcmath php-mysql php-soap php-ldap php-imap php-opcache php-xmlrpc php-redis php-sqlite3
 sudo apt install mysql-server
 sudo mysql
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'AmSikloP?nn1';
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'AmSikloP?nn1???';
 exit
 sudo mysql_secure_installation
+sudo mysql -p
 CREATE DATABASE laravelexample CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 exit
 cd /var/www/
@@ -49,30 +50,50 @@ curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
 sudo -E bash nodesource_setup.sh
 sudo apt-get install -y nodejs
 
+cd var/www/laravelexample
+composer install
+composer update
+php artisan key:generate
+php artisan storage:link
+npm install
+npm update
+npm run build
+php artisan migrate
 
-Install file manager and phpMyAdmin
-cd /var/www/laravelexample
-composer require "studio-42/elfinder"
-mkdir public/elfinder
-nano config/elfinder.php
+install php phpMyAdmin
+sudo apt install phpmyadmin
+sudo phpenmod mbstring
+sudo systemctl restart apache2
+http://vpsocial.online/phpmyadmin
 
-<?php
+install file manager
+sudo wget https://github.com/prasathmani/tinyfilemanager/archive/refs/heads/master.zip -O tinyfilemanager.zip
+sudo apt install unzip
+sudo unzip tinyfilemanager.zip -d filemanager
+sudo mv filemanager/tinyfilemanager-master/* filemanager/
+sudo chown -R www-data:www-data /var/www/laravelexample/filemanager
+sudo chmod -R 775 /var/www/laravelexample/filemanager
+sudo nano /etc/apache2/sites-available/laravelexample.net.conf
 
-return [
-    'roots' => [
-        [
-            'driver' => 'LocalFileSystem',
-            'path' => public_path('elfinder/files/'),
-            'URL' => env('APP_URL') . '/elfinder/files/',
-            'accessControl' => 'access' // filter access
-        ]
-    ]
-];
+Alias /filemanager /var/www/laravelexample/filemanager
+<Directory /var/www/laravelexample/filemanager>
+    AllowOverride All
+    Require all granted
+</Directory>
+sudo systemctl restart apache2
+sudo nano /var/www/laravelexample/filemanager/tinyfilemanager.php
+$root_path = '/var/www/laravelexample';
+sudo chown -R www-data:www-data /var/www/laravelexample
+sudo chmod -R 775 /var/www/laravelexample
 
-use Barryvdh\Elfinder\ElfinderController;
 
-Route::group(['prefix' => 'elfinder'], function () {
-    Route::get('connector', [ElfinderController::class, 'showConnector']);
-});
+http://vpsocial.online/filemanager/tinyfilemanager.php
+admin admin@123
 
-mkdir -p public/elfinder/files
+file upload sizes
+php --ini
+sudo nano /etc/php/8.3/apache2/php.ini
+sudo systemctl restart apache2
+sudo nano /var/www/laravelexample/filemanager/phpinfo.php
+<?php phpinfo(); ?>
+http://vpsocial.online/filemanager/phpinfo.php

@@ -1,4 +1,10 @@
+php --ini
+nano /etc/php/8.2/cli/php.ini
+sudo nano /etc/nginx/nginx.conf
+sudo systemctl restart php8.3-fpm
+sudo systemctl restart nginx
 su - user
+cd htdocs
 mv srv625407.hstgr.cloud/ srv625407.hstgr.cloud.bak
 git clone https://github.com/Vaidas393/SocialLaravel11.git srv625407.hstgr.cloud
 rm -rf srv625407.hstgr.cloud.bak/
@@ -7,7 +13,14 @@ cd srv625407.hstgr.cloud
 composer install
 composer update
 php artisan key:generate
+exit
+
 install node js(node source)
+curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
+sudo -E bash nodesource_setup.sh
+sudo apt install -y nodejs
+su - user
+
 cd srv625407.hstgr.cloud/
 npm install
 npm run build

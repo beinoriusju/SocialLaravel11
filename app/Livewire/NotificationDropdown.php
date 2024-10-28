@@ -19,9 +19,19 @@ class NotificationDropdown extends Component
 
     public function loadUnreadCount()
     {
-        $this->unreadCount = Notification::where('receiver_id', Auth::id())
-            ->whereNull('read_at')
-            ->count();
+        try {
+            if (Auth::check()) {
+                $userId = Auth::id();
+                $this->unreadCount = Notification::where('receiver_id', $userId)
+                    ->whereNull('read_at')
+                    ->count();
+            } else {
+                $this->unreadCount = 0;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error in loadUnreadCount: ' . $e->getMessage());
+            $this->unreadCount = 0; // Default to 0 in case of an error
+        }
     }
 
     public function render()

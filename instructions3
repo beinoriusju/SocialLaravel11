@@ -61,7 +61,7 @@ sudo nano /etc/nginx/sites-available/laravelexample
 # Paste the following configuration into the file
 server {
     listen 80;
-    server_name vpsocial.online;
+    server_name vpsocial.site;
     root /var/www/laravelexample/public;
 
     index index.php index.html index.htm;
@@ -91,7 +91,7 @@ sudo systemctl restart nginx
 sudo apt install certbot python3-certbot-nginx -y
 
 # Obtain and configure SSL certificate for Nginx
-sudo certbot --nginx -d vpsocial.online
+sudo certbot --nginx -d vpsocial.site
 
 # Install Node.js and npm
 curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
@@ -103,16 +103,19 @@ cd /var/www/laravelexample
 npm install
 npm run build
 
+
+
+
 # Install phpMyAdmin for database management
 sudo apt install phpmyadmin -y
 
 # Additional Nginx configuration for HTTPS redirection and phpMyAdmin/TinyFileManager access
-  sudo nano /etc/nginx/sites-available/laravelexample
+    sudo nano /etc/nginx/sites-available/laravelexample
 
 # Replace existing configuration with the following content
 server {
     listen 80;
-    server_name vpsocial.online;
+    server_name vpsocial.site;
 
     # Redirect all traffic to HTTPS except for /phpmyadmin and /filemanager
     location / {
@@ -131,20 +134,33 @@ server {
 }
 
 # Serve the main site on HTTPS
+# NGINX configuration for HTTP to HTTPS redirection (optional)
+
+server {
+    listen 80;
+    server_name vpsocial.site;
+
+    # Redirect all traffic to HTTPS except for /phpmyadmin and /filemanager
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# Main HTTPS server block
+
 server {
     listen 443 ssl;
-    server_name vpsocial.online;
+    server_name vpsocial.site;
 
-    # SSL Certificates
-    ssl_certificate /etc/letsencrypt/live/vpsocial.online/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/vpsocial.online/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
+    # SSL certificates
+    ssl_certificate /etc/letsencrypt/live/vpsocial.site/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/vpsocial.site/privkey.pem;
 
+    # Root for Laravel application
     root /var/www/laravelexample/public;
     index index.php index.html index.htm;
 
-    # Laravel application root
+    # Laravel application root configuration
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
@@ -157,58 +173,24 @@ server {
         include fastcgi_params;
     }
 
-    # phpMyAdmin without HTTPS redirect
+    # phpMyAdmin configuration
     location /phpmyadmin {
         alias /usr/share/phpmyadmin/;
         index index.php;
-        location ~ \.php$ {
-            fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-            include snippets/fastcgi-php.conf;
-            fastcgi_param SCRIPT_FILENAME $request_filename;
-            include fastcgi_params;
-        }
     }
 
-    # TinyFileManager without HTTPS redirect
-    location /filemanager/ {
-        alias /var/www/laravelexample/filemanager/;
-        index tinyfilemanager.php;
-        try_files $uri $uri/ /filemanager/tinyfilemanager.php;
-    }
-
-    location ~ ^/filemanager/tinyfilemanager\.php$ {
-        alias /var/www/laravelexample/filemanager/tinyfilemanager.php;
+    location ~ ^/phpmyadmin/(.+\.php)$ {
+        alias /usr/share/phpmyadmin;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
-        include snippets/fastcgi-php.conf;
-        fastcgi_param SCRIPT_FILENAME /var/www/laravelexample/filemanager/tinyfilemanager.php;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
         include fastcgi_params;
     }
 }
-
-# Test the final Nginx configuration and restart the service
-sudo nginx -t
-sudo systemctl restart nginx
-
-# Download and set up TinyFileManager
-sudo wget https://github.com/prasathmani/tinyfilemanager/archive/refs/heads/master.zip -O tinyfilemanager.zip
-sudo apt install unzip
-sudo unzip tinyfilemanager.zip -d filemanager
-sudo mv filemanager/tinyfilemanager-master/* filemanager/
-sudo chown -R www-data:www-data /var/www/laravelexample/filemanager
-sudo chmod -R 775 /var/www/laravelexample/filemanager
-
-# Configure TinyFileManager authentication and root path
-sudo nano /var/www/laravelexample/filemanager/tinyfilemanager.php
-
-# Inside tinyfilemanager.php, update authentication and root path
-$auth_users = [
-    'admin' => password_hash('Ktz235N788', PASSWORD_DEFAULT),
-];
-$root_path = '/var/www/laravelexample';
 
 # Final Nginx configuration test and restart
 sudo nginx -t
 sudo systemctl restart nginx
 
-http://vpsocial.online/filemanager/tinyfilemanager.php
-http://vpsocial.online/phpmyadmin.php
+http://vpsocial.site/filemanager/tinyfilemanager.php
+http://vpsocial.site/phpmyadmin.php

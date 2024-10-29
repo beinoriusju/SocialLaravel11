@@ -1,11 +1,6 @@
 <div>
-      <div class="chat-header pt-4 px-4 d-flex align-items-center justify-content-between">
-          <h5 class="fw-500">Chats</h5>
-          <a href="{{ route('blog') }}" class="btn btn-link text-decoration-none">
-             <i class="bi bi-house-fill" style="font-size: 18px;"></i>
-           </a>
-      </div>
-      <div class="user-search-bar position-relative">
+    <h5>Chats</h5>
+    <div class="user-search-bar position-relative">
         <input wire:model.live="query" type="text" class="form-control" placeholder="Search for users...">
         @if (strlen($query) >= 2)
             <ul class="list-group mt-2 position-absolute w-100" style="max-height: 600px; overflow-y: auto; z-index: 10;">

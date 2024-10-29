@@ -6,12 +6,10 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\Friend;
+use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use App\Events\NotificationSent;
-use App\Models\Notification;
-
+use App\Events\NotificationSent; // Import the event class
 
 class UsersList extends Component
 {
@@ -133,7 +131,7 @@ class UsersList extends Component
             ]);
 
             // Broadcast the notification
-            // broadcast(new NotificationSent($notification))->toOthers();
+            broadcast(new NotificationSent($notification))->toOthers();
 
             DB::commit();
             $this->dispatch('alert', [

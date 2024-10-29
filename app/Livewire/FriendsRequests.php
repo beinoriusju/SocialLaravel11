@@ -8,7 +8,6 @@ use App\Models\Friend;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use App\Events\NotificationSent; // Import the event class
-use Illuminate\Support\Facades\Auth;
 
 class FriendsRequests extends Component
 {

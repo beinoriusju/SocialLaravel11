@@ -87,31 +87,30 @@
 
                <!-- Preview Section -->
                <div class="mt-3">
-                   @if (!empty($images) && is_array($images))
-                       <div class="row">
-                           @foreach ($images as $image)
-                               @if ($image)
-                                   <div class="col-md-4 mb-3">
-                                       <img src="{{ $image->temporaryUrl() }}" alt="{{ __('translations.Uploaded image preview') }}" class="img-fluid" style="max-width: 100%;">
-                                   </div>
-                               @endif
-                           @endforeach
-                       </div>
-                   @endif
+                 @if (!empty($images) && is_array($images))
+                     <div class="row">
+                         @foreach ($images as $image)
+                             @if ($image)
+                                 <div class="col-md-4 mb-3">
+                                     <img src="{{ $image->temporaryUrl() }}" alt="{{ __('translations.Uploaded image preview') }}" class="img-fluid" style="max-width: 100%;">
+                                 </div>
+                             @endif
+                         @endforeach
+                     </div>
+                 @endif
 
-                   <!-- Videos Preview -->
-                   @if (!empty($video) && is_array($video))
-                       <div class="mt-3">
-                           @foreach ($video as $videoFile)
-                               @if ($videoFile)
-                                   <div class="mb-3">
-                                       <video src="{{ $videoFile->temporaryUrl() }}" controls class="w-100" style="height: auto;"></video>
-                                   </div>
-                               @endif
-                           @endforeach
-                       </div>
-                   @endif
-               </div>
+                 <!-- Videos Preview -->
+                @if (!empty($video) && is_array($video))
+                    <div class="mt-3">
+                        @foreach ($video as $videoFile)
+                            @if ($videoFile)
+                                <div class="mb-3">
+                                    <video src="{{ $videoFile->temporaryUrl() }}" controls class="w-100" style="height: auto;"></video>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
              </div>
             </div>
 

@@ -70,3 +70,7 @@ file upload sizes
 php --ini
 sudo nano /etc/php/8.3/apache2/php.ini
 sudo systemctl restart apache2
+
+cd /var/www/laravelexample
+git config --global --add safe.directory /var/www/laravelexample
+git pull https://github.com/Vaidas393/SocialLaravel11.git

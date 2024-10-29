@@ -6,11 +6,12 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\Friend;
-use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
-use App\Events\NotificationSent; // Import the event class
+use App\Events\NotificationSent;
+use App\Models\Notification;
+
 
 class UsersList extends Component
 {

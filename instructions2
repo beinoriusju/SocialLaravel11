@@ -5,7 +5,7 @@ sudo ufw allow "Apache Full"
 sudo apt install php libapache2-mod-php php-mbstring php-gd php-xml php-cli php-zip php-json php-curl php-intl php-bcmath php-mysql php-soap php-ldap php-imap php-opcache php-xmlrpc php-redis php-sqlite3
 sudo apt install mysql-server
 sudo mysql
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Ktz235N788??';
 exit
 sudo mysql_secure_installation
 sudo mysql -p
@@ -27,7 +27,7 @@ cd /etc/apache2/sites-available/
 sudo nano laravelexample.net.conf
 
 <VirtualHost *:80>
-   ServerName vpsocial.online
+   ServerName vpsocial.site
    ServerAdmin webmaster@thedomain.com
    DocumentRoot /var/www/laravelexample/public
    <Directory /var/www/laravelexample>
@@ -64,7 +64,7 @@ install php phpMyAdmin
 sudo apt install phpmyadmin
 sudo phpenmod mbstring
 sudo systemctl restart apache2
-http://vpsocial.online/phpmyadmin
+http://vpsocial.site/phpmyadmin
 
 install file manager
 sudo wget https://github.com/prasathmani/tinyfilemanager/archive/refs/heads/master.zip -O tinyfilemanager.zip
@@ -76,7 +76,7 @@ sudo chmod -R 775 /var/www/laravelexample/filemanager
 sudo nano /etc/apache2/sites-available/laravelexample.net.conf
 
 <VirtualHost *:80>
-    ServerName vpsocial.online
+    ServerName vpsocial.site
     ServerAdmin webmaster@thedomain.com
     DocumentRoot /var/www/laravelexample/public
     <Directory /var/www/laravelexample>
@@ -88,7 +88,7 @@ sudo nano /etc/apache2/sites-available/laravelexample.net.conf
     # Redirect to HTTPS, but exclude /filemanager and anything that follows
     <IfModule mod_rewrite.c>
         RewriteEngine on
-        RewriteCond %{SERVER_NAME} =vpsocial.online
+        RewriteCond %{SERVER_NAME} =vpsocial.site
         RewriteCond %{REQUEST_URI} !^/filemanager(/|$)
         RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
     </IfModule>
@@ -114,7 +114,7 @@ sudo chown -R www-data:www-data /var/www/laravelexample
 sudo chmod -R 775 /var/www/laravelexample
 
 
-http://vpsocial.online/filemanager/tinyfilemanager.php
+http://vpsocial.site/filemanager/tinyfilemanager.php
 admin admin@123
 
 file upload sizes
@@ -123,4 +123,4 @@ sudo nano /etc/php/8.3/apache2/php.ini
 sudo systemctl restart apache2
 sudo nano /var/www/laravelexample/filemanager/phpinfo.php
 <?php phpinfo(); ?>
-http://vpsocial.online/filemanager/phpinfo.php
+http://vpsocial.site/filemanager/phpinfo.php

@@ -12,6 +12,7 @@ sudo ufw allow 'Nginx Full'
 sudo apt install php8.3 php8.3-fpm php8.3-mbstring php8.3-gd php8.3-xml php8.3-cli php8.3-zip php8.3-curl php8.3-intl php8.3-bcmath php8.3-mysql php8.3-soap php8.3-ldap php8.3-imap php8.3-opcache php8.3-redis php8.3-sqlite3 -y
 
 # Configure PHP
+sudo nano /etc/nginx/nginx.conf
 sudo nano /etc/php/8.3/fpm/php.ini
 
 # Restart PHP 8.3-FPM service
@@ -163,6 +164,9 @@ server {
     ssl_certificate /etc/letsencrypt/live/vpsocial.site/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/vpsocial.site/privkey.pem;
 
+    # Allow large file uploads
+    client_max_body_size 100M;  # Set the desired size limit
+
     # phpMyAdmin location block
     location /phpmyadmin {
         alias /usr/share/phpmyadmin;  # Ensure this path is correct
@@ -204,4 +208,128 @@ sudo nginx -t
 sudo systemctl restart nginx
 
 https://vpsocial.site/phpmyadmin
- Works!!!!!!!!!!
+ Works!!!!!!!!!
+
+ https://vpsocial.site/admin/dashboard
+ admin@mail.com Ktz235N788??
+
+Revervb
+sudo apt update
+sudo apt install supervisor -y
+sudo nano /etc/supervisor/conf.d/laravel-reverb.conf
+
+[program:laravel-reverb]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/laravelexample/artisan reverb:start --port=8080  # Adjust the port here
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data  # Or another user
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/log/laravel-reverb.log
+stopwaitsecs=3600
+
+
+sudo nano /etc/nginx/sites-available/laravelexample
+
+
+server {
+    listen 80;
+    server_name vpsocial.site;
+
+    # Redirect all HTTP requests to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name vpsocial.site;
+    root /var/www/laravelexample/public;
+
+    index index.php index.html index.htm;
+
+    ssl_certificate /etc/letsencrypt/live/vpsocial.site/fullchain.pem;  # Ensure this path is correct
+    ssl_certificate_key /etc/letsencrypt/live/vpsocial.site/privkey.pem;  # Ensure this path is correct
+
+    # Allow large file uploads
+    client_max_body_size 50G;  # Set the desired size limit to 50GB
+
+    # Increase buffer settings
+    client_body_buffer_size 1512k;  # Increase body buffer size
+    proxy_buffer_size 1512k;  # Increase the buffer size for proxied requests
+    proxy_buffers 8 1512k;  # Use 8 buffers of 512k
+    proxy_busy_buffers_size 1512k;  # Adjust busy buffer size
+
+    # phpMyAdmin location block
+    location /phpmyadmin {
+        alias /usr/share/phpmyadmin;  # Ensure this path is correct
+        index index.php index.html index.htm;
+
+        # Handle PHP files in phpMyAdmin
+        location ~ ^/phpmyadmin/(.+\.php)$ {
+            fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;  # Ensure this matches your PHP-FPM version
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME /usr/share/phpmyadmin/$1;  # Use the correct path here
+            include fastcgi_params;
+        }
+
+        location ~ ^/phpmyadmin/(.+\.ht) {
+            deny all;
+        }
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;  # This is fine
+        include fastcgi_params;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    # Reverb configuration
+    location /reverb {
+        proxy_pass http://127.0.0.1:8082;  # Ensure this is your Reverb server address
+        proxy_http_version 1.1;  # Use HTTP/1.1 for WebSocket support
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;  # Upgrade header for WebSocket
+        proxy_set_header Connection "Upgrade";  # Connection header for WebSocket
+    }
+}
+
+# Additional server block for Reverb
+server {
+    listen 8081 ssl;
+    server_name vpsocial.site;  # Ensure this matches your domain
+
+    ssl_certificate /etc/letsencrypt/live/vpsocial.site/fullchain.pem;  # Adjust this path if needed
+    ssl_certificate_key /etc/letsencrypt/live/vpsocial.site/privkey.pem;  # Adjust this path if needed
+
+    location / {
+        proxy_http_version 1.1;  # Use HTTP/1.1 for WebSocket support
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;  # Upgrade header for WebSocket
+        proxy_set_header Connection "Upgrade";  # Connection header for WebSocket
+
+        proxy_pass http://127.0.0.1:8082;  # Adjust this to your Reverb service address
+    }
+}
+
+
+mkdir -p /home/user/htdocs/srv625407.hstgr.cloud/
+
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start laravel-reverb

@@ -51,6 +51,14 @@ element {
   min-width: 50px;
 }
 
+.profile-header-image .profile-img{
+  margin-top: -5px;
+}
+
+.w80{
+  width: 80%;
+  max-width: 400px;
+}
 /* .profile-img{
   min-height: 50px;
   height: 50px;

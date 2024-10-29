@@ -126,7 +126,7 @@
                                     <div class="col-md-4 mb-3">
                                         <div class="border rounded p-2">
                                             <a href="{{ asset('storage/' . $image) }}" data-fslightbox="gallery-{{ $message['id'] }}" class="rounded">
-                                                <img src="{{ asset('storage/' . $image) }}" class="img-fluid rounded w-100" alt="Image" style="max-height: 300px;">
+                                                <img src="{{ asset('storage/' . $image) }}" class="img-fluid rounded w80" alt="Image" style="max-height: 300px;">
                                             </a>
                                         </div>
                                     </div>

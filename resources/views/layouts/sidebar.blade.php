@@ -39,7 +39,7 @@
                     </a>
                 </li>
                 @endif
-      
+
                 <!-- Separate links for Friends, Friend Requests, and Users -->
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('friends') }}">

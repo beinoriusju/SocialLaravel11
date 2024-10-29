@@ -61,6 +61,7 @@ npm run build
 php artisan migrate
 
 install php phpMyAdmin
+cd /var/www/laravelexample
 sudo apt install phpmyadmin
 sudo phpenmod mbstring
 sudo systemctl restart apache2
@@ -73,4 +74,5 @@ sudo systemctl restart apache2
 
 cd /var/www/laravelexample
 git config --global --add safe.directory /var/www/laravelexample
-git push https://github.com/Vaidas393/SocialLaravel11.git
+git reset --hard HEAD
+git pull https://github.com/Vaidas393/SocialLaravel11.git

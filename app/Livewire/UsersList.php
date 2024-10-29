@@ -9,6 +9,7 @@ use App\Models\Friend;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use App\Events\NotificationSent; // Import the event class
 
 class UsersList extends Component
@@ -122,6 +123,8 @@ class UsersList extends Component
                 'status' => 'pending',
             ]);
 
+            \Log::info('Attempting to create notification for user:', ['user_id' => $user->id]);
+
             $notification = Notification::create([
                 'type' => 'friend_request',
                 'sender_id' => auth()->id(),
@@ -129,6 +132,8 @@ class UsersList extends Component
                 'message' => auth()->user()->username . ' sent you a friend request',
                 'url' => '#',
             ]);
+
+            \Log::info('Notification created successfully:', ['notification_id' => $notification->id]);
 
             // Broadcast the notification
             broadcast(new NotificationSent($notification))->toOthers();

@@ -8,6 +8,7 @@ use App\Models\Like;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use App\Events\NotificationSent; // Import the event class
+use Illuminate\Support\Facades\Auth;
 
 class LikePost extends Component
 {

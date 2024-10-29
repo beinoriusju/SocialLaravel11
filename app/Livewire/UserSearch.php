@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Friend;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class UserSearch extends Component
 {

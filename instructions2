@@ -66,61 +66,7 @@ sudo phpenmod mbstring
 sudo systemctl restart apache2
 http://vpsocial.site/phpmyadmin
 
-install file manager
-sudo wget https://github.com/prasathmani/tinyfilemanager/archive/refs/heads/master.zip -O tinyfilemanager.zip
-sudo apt install unzip
-sudo unzip tinyfilemanager.zip -d filemanager
-sudo mv filemanager/tinyfilemanager-master/* filemanager/
-sudo chown -R www-data:www-data /var/www/laravelexample/filemanager
-sudo chmod -R 775 /var/www/laravelexample/filemanager
-sudo nano /etc/apache2/sites-available/laravelexample.net.conf
-
-<VirtualHost *:80>
-    ServerName vpsocial.site
-    ServerAdmin webmaster@thedomain.com
-    DocumentRoot /var/www/laravelexample/public
-    <Directory /var/www/laravelexample>
-        AllowOverride All
-    </Directory>
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
-
-    # Redirect to HTTPS, but exclude /filemanager and anything that follows
-    <IfModule mod_rewrite.c>
-        RewriteEngine on
-        RewriteCond %{SERVER_NAME} =vpsocial.site
-        RewriteCond %{REQUEST_URI} !^/filemanager(/|$)
-        RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
-    </IfModule>
-
-    # Alias and access for file manager
-    Alias /filemanager /var/www/laravelexample/filemanager
-    <Directory /var/www/laravelexample/filemanager>
-        AllowOverride All
-        Require all granted
-    </Directory>
-</VirtualHost>
-
-
-sudo systemctl restart apache2
-sudo nano /var/www/laravelexample/filemanager/tinyfilemanager.php
-
-$auth_users = [
-    'admin' => password_hash('strong_password', PASSWORD_DEFAULT),
-];
-
-$root_path = '/var/www/laravelexample';
-sudo chown -R www-data:www-data /var/www/laravelexample
-sudo chmod -R 775 /var/www/laravelexample
-
-
-http://vpsocial.site/filemanager/tinyfilemanager.php
-admin admin@123
-
 file upload sizes
 php --ini
 sudo nano /etc/php/8.3/apache2/php.ini
 sudo systemctl restart apache2
-sudo nano /var/www/laravelexample/filemanager/phpinfo.php
-<?php phpinfo(); ?>
-http://vpsocial.site/filemanager/phpinfo.php

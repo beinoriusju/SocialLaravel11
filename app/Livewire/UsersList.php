@@ -123,8 +123,6 @@ class UsersList extends Component
                 'status' => 'pending',
             ]);
 
-            \Log::info('Attempting to create notification for user:', ['user_id' => $user->id]);
-
             $notification = Notification::create([
                 'type' => 'friend_request',
                 'sender_id' => auth()->id(),
@@ -133,10 +131,8 @@ class UsersList extends Component
                 'url' => '#',
             ]);
 
-            \Log::info('Notification created successfully:', ['notification_id' => $notification->id]);
-
             // Broadcast the notification
-            broadcast(new NotificationSent($notification))->toOthers();
+            // broadcast(new NotificationSent($notification))->toOthers();
 
             DB::commit();
             $this->dispatch('alert', [

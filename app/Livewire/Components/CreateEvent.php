@@ -64,8 +64,8 @@ class CreateEvent extends Component
             'event_date' => 'required|date',
             'eventCategory' => 'required|exists:event_categories,id',
             'eventSubCategory' => 'nullable|exists:event_subcategories,id',
-            'images.*' => 'nullable|image|max:51200',
-            'videos.*' => 'nullable|mimes:mp4,avi,mkv|max:51200',
+            'images.*' => 'nullable|image|max:512000',
+            'videos.*' => 'nullable|mimes:mp4,avi,mkv|max:512000',
         ]);
 
         // Extract YouTube links from the title, description, and details

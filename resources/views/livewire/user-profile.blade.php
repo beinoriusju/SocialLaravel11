@@ -243,7 +243,7 @@
                                                   <!-- Show More Media Button -->
                                                   @if ($totalMedia > 5 || count($videos) > 0 || count($youtubeLinks) > 0)
                                                       <p class="cursor-pointer text-primary" data-bs-toggle="modal" data-bs-target="#mediaModal-{{ $post->id }}">
-                                                          {{ __('translations.more media') }} {{ count($images) + count($videos) + count($youtubeLinks) }} {{ __('translations.total') }}
+                                                          + {{ count($images) + count($videos) + count($youtubeLinks) }}
                                                       </p>
                                                   @endif
                                               @endif
@@ -685,12 +685,12 @@
 
                                                 <!-- Infinite Scrolling Trigger -->
                                                 <div wire:loading class="text-center">
-                                                    <p>{{ __('translations.Loading more...') }}</p>
+                                                    <p>{{ __('translations.Loading more') }}</p>
                                                 </div>
 
                                                 @if(!$profilePhotosLoaded)
                                                     <div class="text-center">
-                                                        <p>{{ __('translations.No more photos to load') }}</p>
+                                                        <p>{{ __('translations.No more to load') }}</p>
                                                     </div>
                                                 @endif
                                             </div>
@@ -713,12 +713,12 @@
 
                                                 <!-- Infinite Scrolling Trigger -->
                                                 <div wire:loading class="text-center">
-                                                    <p>{{ __('translations.Loading more...') }}</p>
+                                                    <p>{{ __('translations.Loading more') }}</p>
                                                 </div>
 
                                                 @if(!$postPhotosLoaded)
                                                     <div class="text-center">
-                                                        <p>{{ __('translations.No more photos to load') }}</p>
+                                                        <p>{{ __('translations.No more to load') }}</p>
                                                     </div>
                                                 @endif
                                             </div>

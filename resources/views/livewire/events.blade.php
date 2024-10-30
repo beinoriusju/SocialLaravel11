@@ -126,6 +126,7 @@
                                             <!-- Show the Update Button only to the Event Creator -->
                                             @if (auth()->id() === $event->user_id)
                                                 <button wire:click="editEvent({{ $event->id }})" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#editModal">{{ __('translations.Update') }}</button>
+                                                <button wire:click="deleteEvent({{ $event->id }})" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this event?');">{{ __('translations.Delete') }}</button>
                                             @endif
 
                                             <!-- Attending / Not Attending Buttons -->

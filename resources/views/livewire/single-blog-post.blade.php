@@ -53,7 +53,7 @@
 
                                 <!-- Show More Images -->
                                 @if ($showMore)
-                                    <p>+{{ count($images) - $displayLimit }} {{ __('translations.more images') }}</p>
+                                    <p>+{{ count($images) - $displayLimit }} </p>
                                 @endif
 
                                 <!-- Lightbox for remaining images -->

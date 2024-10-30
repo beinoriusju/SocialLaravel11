@@ -59,8 +59,8 @@ class BlogPostModal extends Component
             'details' => 'nullable|string',
             'blogCategory' => 'required|exists:blog_categories,id',
             'blogSubCategory' => 'nullable|exists:blog_subcategories,id',
-            'images.*' => 'nullable|image|max:51200', // 50 MB in kilobytes
-            'video.*' => 'nullable|mimes:mp4,avi,mkv|max:51200', // Validate multiple video files
+            'images.*' => 'nullable|image|max:512000', // 50 MB in kilobytes
+            'video.*' => 'nullable|mimes:mp4,avi,mkv|max:512000', // Validate multiple video files
             'is_public' => 'required|boolean', // 1 for Public, 0 for Friends
         ]);
 

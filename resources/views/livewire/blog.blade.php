@@ -79,7 +79,7 @@
                                         <p>{{ $post['description'] }}</p>
                                         @if ($additionalMediaCount > 0)
                                             <div class="text-muted mb-2">
-                                                {{ __('+ :count', ['count' => $additionalMediaCount]) }} {{ __('translations.more media') }}
+                                                {{ __('+ :count', ['count' => $additionalMediaCount]) }}
                                             </div>
                                         @endif
                                         <a href="{{ route('blog.post', $post['id']) }}" class="d-flex align-items-center">
@@ -97,7 +97,7 @@
                                         <p>{{ $post['description'] }}</p>
                                         @if ($additionalMediaCount > 0)
                                             <div class="text-muted mb-2">
-                                                {{ __('+ :count more media', ['count' => $additionalMediaCount]) }}{{ __('translations.more media') }}
+                                                {{ __('+ :count more media', ['count' => $additionalMediaCount]) }}
                                             </div>
                                         @endif
                                         <div class="blog-meta mb-2">
@@ -151,7 +151,7 @@
 
             @if (!$hasMorePages)
                 <div class="col-lg-12 text-center mb-4">
-                    <p>{{ __('translations.No more') }}</p>
+                    <p>{{ __('translations.No more too load') }}</p>
                 </div>
             @endif
         </div>

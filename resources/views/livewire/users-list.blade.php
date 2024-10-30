@@ -76,7 +76,7 @@
     </div>
 
     <div wire:loading.class="loading" class="text-center mt-4 loading-text">
-        <span>{{ __('translations.No more') }}</span>
+        <span>{{ __('translations.No more to load') }}</span>
     </div>
 </div>
 
@@ -101,7 +101,7 @@
         window.addEventListener('noMoreUsers', function () {
             const loadingText = document.querySelector('.loading-text');
             if (loadingText) {
-                loadingText.textContent = "No more users to load.";
+                loadingText.textContent = "_____";
                 loadingText.classList.add('text-warning');
             }
         });
@@ -111,7 +111,7 @@
             if (!event.detail.hasMorePages) {
                 const loadingText = document.querySelector('.loading-text');
                 if (loadingText) {
-                    loadingText.textContent = "No more users to load.";
+                    loadingText.textContent = "______";
                     loadingText.classList.add('text-warning');
                 }
             }

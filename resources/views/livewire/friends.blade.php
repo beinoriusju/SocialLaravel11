@@ -44,10 +44,10 @@
 
         <!-- Loading and no more friends message -->
         <div class="text-center mt-4" wire:loading>
-            <span>Loading more friends...</span>
+            <span>{{ __('translations.Loading more') }}</span>
         </div>
         <div class="text-center mt-4" id="noMoreFriendsMessage" style="display: none;">
-            <span>No more friends to load.</span>
+            <span>{{ __('translations.No more to load') }}</span>
         </div>
     </div>
 
